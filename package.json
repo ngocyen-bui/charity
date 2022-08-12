@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@emotion/react": "^11.10.0",
@@ -21,6 +23,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "formik": "^2.2.9",
+    "gh-pages": "^4.0.0",
     "next": "12.2.4",
     "next-redux-wrapper": "^7.0.5",
     "react": "17.0.2",

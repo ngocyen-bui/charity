@@ -276,7 +276,7 @@ export default function DetailUser() {
               >
                 {listSetting?.map((e) => {
                   if(e?.url){
-                   return <Link href={e.url}>
+                   return <Link href={e.url} key={e?.text}>
                     <MenuItem onClick={handleClose}>
                       <ListItemIcon>{e?.icon}</ListItemIcon>
                       <ListItemText>{e?.text}</ListItemText>
@@ -284,7 +284,7 @@ export default function DetailUser() {
                     </Link>
                   }
                   return (
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={handleClose} key={e?.text}>
                       <ListItemIcon>{e?.icon}</ListItemIcon>
                       <ListItemText>{e?.text}</ListItemText>
                     </MenuItem>
@@ -305,6 +305,7 @@ export default function DetailUser() {
           {listType?.map((e) => {
             return (
               <Button
+              key={e?.id}
                 size="small"
                 variant={type === e.id ? "contained" : "text"}
                 onClick={() => handleChangeType(e?.id)}
@@ -380,7 +381,7 @@ export default function DetailUser() {
                   aria-label="basic tabs example"
                 >
                   {listTypePost?.map(e => {
-                    return <Tab label={e?.text} {...a11yProps(e?.key)} />
+                    return <Tab key={e?.key} label={e?.text} {...a11yProps(e?.key)} />
                   })}
                 </Tabs>
               </Box>
