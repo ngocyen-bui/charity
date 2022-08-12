@@ -1,0 +1,9 @@
+.wrapper-header__user-info{
+    display: flex;
+}
+.header-layout{
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    box-shadow: 0 3px 3px 1px #ddd;
+}

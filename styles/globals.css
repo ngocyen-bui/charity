@@ -1,0 +1,97 @@
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/nunitosans/v12/pe03MImSLYBIv1o4X1M8cc8WAc5gU1EQVg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0; 
+  background-color: #f2f2f2;
+  font-family: Nunito Sans, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box; 
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    color: white;
+    background: black;
+  }
+}
+.header-layout{
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#f19e9e),to(#ef5d5d));
+    background-image: -webkit-linear-gradient(top,#f19e9e,#ef5d5d);
+    background-image: -moz-linear-gradient(top,#f19e9e,#ef5d5d);
+    background-image: linear-gradient(180deg,#f19e9e,#ef5d5d);
+}
+.btn-header-login:hover,
+.btn-header-login{
+  background-color: white;
+  color: #f19e9e ;
+  font-size: 9px;
+}
+.btn-header-login:hover{
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.156);
+  background-color: white;
+}
+.header-sub-menu{    
+  background: #fff;
+  box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.3);
+  padding-block: 5px;
+}
+
+.isActiveNavBar{
+ color: rgba(0, 0, 0, 0.8) !important;
+}
+.isActiveSubNavBar{
+  border-radius: 8px;
+  -webkit-box-shadow: 0 1px 2px rgb(0 0 0 / 7%), 0 2px 4px rgb(0 0 0 / 7%), 0 4px 8px rgb(0 0 0 / 7%), 0 8px 16px rgb(0 0 0 / 7%), 0 16px 32px rgb(0 0 0 / 7%), 0 32px 64px rgb(0 0 0 / 7%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 7%), 0 2px 4px rgb(0 0 0 / 7%), 0 4px 8px rgb(0 0 0 / 7%), 0 8px 16px rgb(0 0 0 / 7%), 0 16px 32px rgb(0 0 0 / 7%), 0 32px 64px rgb(0 0 0 / 7%);
+  padding-block: 0;
+  margin: 0;
+}
+.field-login label.Mui-focused{
+  color: #FE9292
+}
+.field-login .MuiFilledInput-root{
+  border-radius: 12px;
+}
+.field-login .MuiFilledInput-root.Mui-focused{
+  border-radius: 12px 12px 0 0;
+}
+.field-login .MuiFilledInput-root:after{
+  border-color:  #FE9292 !important; 
+}
+.register-button{
+  background-color: rgb(242, 242, 242);
+  color: rgb(51, 51, 51);
+  text-transform: none;
+  margin-right: 20px;
+}
+.register-link{
+  cursor: pointer;
+  color: #64b5ec;
+  text-decoration: underline;
+}
+.text-link{
+  line-height: 25px;
+   color: #64b5ec;
+   cursor: pointer;
+}
+@import url('./_detailUser.css');
+@import url('./_post.css');

@@ -1,0 +1,155 @@
+{
+    "categoryIds": [],
+    "images": {
+      "image": "8411c90d-1cd8-483c-96af-67702814befd",
+      "imageThumbnail": "85029cc0-eab3-4a93-ab2d-d65305f55eae"
+    },
+    "meta": {},
+    "extra": {},
+    "dataInfo": {
+      "area": null,
+      "type": [],
+      "year": null,
+      "other": "",
+      "career": [],
+      "gender": "",
+      "address": {
+        "detail": "",
+        "cityId": null,
+        "wardId": null,
+        "countryId": null,
+        "districtId": null,
+        "country": null,
+        "city": null,
+        "district": null,
+        "ward": null
+      },
+      "minAge": null,
+      "request": "",
+      "yearTo": null,
+      "jobType": [],
+      "payForm": [],
+      "yearFrom": null,
+      "categories": [],
+      "coordinate": {
+        "x": 10.782727209529114,
+        "y": 106.69429686724244
+      },
+      "experience": "",
+      "placeType": [],
+      "certificate": "",
+      "careerOther": "",
+      "academicLevel": [],
+      "categoryOther": "",
+      "jobTypeOther": "",
+      "payFormOther": "",
+      "formOfSupport": [],
+      "addressLocation": "59d Nguyễn Đình Chiểu, Phường 6, Quận 3, Thành phố Hồ Chí Minh, Việt Nam",
+      "placeTypeOther": "",
+      "quantityRecruit": null,
+      "statusFurniture": "",
+      "locationGoogleMap": [
+        {
+          "types": [
+            "street_number"
+          ],
+          "longName": "59d",
+          "shortName": "59d"
+        },
+        {
+          "types": [
+            "route"
+          ],
+          "longName": "Nguyễn Đình Chiểu",
+          "shortName": "Nguyễn Đình Chiểu"
+        },
+        {
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ],
+          "longName": "Quận 3",
+          "shortName": "Quận 3"
+        },
+        {
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ],
+          "longName": "Thành phố Hồ Chí Minh",
+          "shortName": "Thành phố Hồ Chí Minh"
+        },
+        {
+          "types": [
+            "country",
+            "political"
+          ],
+          "longName": "Việt Nam",
+          "shortName": "VN"
+        }
+      ],
+      "academicLevelOther": "",
+      "formOfSupportOther": "",
+      "transportProductType": [],
+      "typeOfTransportation": [],
+      "transportProductTypeOther": "",
+      "typeOfTransportationOther": ""
+    },
+    "isAvailable": 1,
+    "id": 1909,
+    "countryId": 1,
+    "cityId": null,
+    "districtId": null,
+    "wardId": null,
+    "creatorId": 1209,
+    "title": "1",
+    "content": "1",
+    "address": "",
+    "seo": "",
+    "slug": "1-656638",
+    "canContact": -1,
+    "status": 1,
+    "contactInfo": {
+      "name": "dat",
+      "email": "17249198@st.hcmuaf.edu.vn",
+      "phone": "0925395077",
+      "informationCurrent": -1
+    },
+    "closedAt": null,
+    "startedAt": "2022-08-12T04:21:35.000Z",
+    "deletedAt": null,
+    "type": 2,
+    "categoryId": 1,
+    "detail": "",
+    "createdAt": "2022-08-12T04:21:35.407Z",
+    "updatedAt": "2022-08-12T04:21:35.407Z",
+    "creator": {
+      "images": {
+        "image": "a13983ae-7cbe-47b0-806f-d97b4f14c75c",
+        "avatar": "1b19bfc4-7a1a-4dc2-9092-4c5a49ce7409",
+        "altText": ""
+      },
+      "id": 1209,
+      "name": "dat",
+      "representName": "",
+      "type": 1,
+      "email": "17249198@st.hcmuaf.edu.vn",
+      "phone": "0925395077",
+      "address": "",
+      "countryId": 1,
+      "cityId": 2,
+      "districtId": 3,
+      "wardId": 5,
+      "memberVerify": null,
+      "beingFollowed": []
+    },
+    "country": {
+      "id": 1,
+      "name": "Việt Nam",
+      "type": 4,
+      "parentId": null
+    },
+    "city": null,
+    "district": null,
+    "ward": null
+  }

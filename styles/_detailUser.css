@@ -1,0 +1,79 @@
+.div-cover{ 
+    position: relative;
+    height: 300px;
+}
+.div-avatar{
+    background-color: white;
+    border-radius: 0 0 10px 10px; 
+    box-shadow: 0 1px 3px 3px #ddd;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 20px;
+}
+.div-avatar .avatar{
+    position: absolute;
+    top: 0;
+    left: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+.div-avatar .follower{
+    display: flex;
+}
+.div-avatar .setting{
+    margin-top: 10px;
+}
+.wrapper-info-header{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.div-avatar .name{
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 18px;
+}
+.wrapper-button-info-user{
+    background-color: white;
+    margin-top: 10px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 16px;
+    padding-bottom: 16px; 
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    box-shadow: 0 3px 3px 3px #ddd;
+}
+.wrapper-button-info-user button{ 
+    text-transform: initial;
+}
+.wrapper-list-info-user{
+    padding-bottom: 24px;
+    background-color: #fff;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    box-shadow: 0 1px 3px 1px #ddd;
+}
+.text-grey{
+    color: #888;
+    font-style: italic;
+    font-size: 14px;
+}
+.item-info-user{
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+.css-1aquho2-MuiTabs-indicator{
+    background-color: rgb(254, 146, 146)
+}
