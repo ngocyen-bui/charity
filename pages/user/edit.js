@@ -2,12 +2,13 @@ import { Box, Container, InputAdornment, TextField, Typography } from "@mui/mate
 import { Header } from "../../components/Header";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { BootstrapButton, CssTextField, getCookie } from "../../utils";
+import { BootstrapButton, CssTextField } from "../../utils";
 
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
-import { getDetailUser, updateDetailUser } from "../api/users/userAPI";
 import { useEffect, useState } from "react";
 import { Footer } from "../../components";
+import { getDetailUser, updateDetailUser } from "../../features/users/userAPI";
+import { getCookie } from "cookies-next";
 
 const validationSchema = yup.object({
     email: yup
@@ -26,9 +27,7 @@ const validationSchema = yup.object({
 
 export default function EditUser() {
     const [listData,setListData] = useState({});
-    const infoUserString =
-    getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") || "";
-  const infoUser = infoUserString ? JSON.parse(infoUserString) : {};
+  const infoUser =getCookie('auth')? JSON.parse(getCookie('auth')): {};
   const { data: infoUsers } = useQuery(["user", infoUser?.id],() => getDetailUser(infoUser?.id), {
     enabled: Boolean(infoUser?.id),
   });

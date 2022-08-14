@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import { useState } from "react";
 import * as yup from "yup";
-import { getDetailUser } from "../pages/api/users/userAPI";
+import { getDetailUser } from "../features/users/userAPI";
 import { BootstrapButton, CssTextField, getCookie } from "../utils";
 import { UploadImage } from "./UploadImage";
 

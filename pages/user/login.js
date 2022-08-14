@@ -2,63 +2,58 @@ import { TextField, Typography } from "@mui/material";
 import { Box, Container } from "@mui/system";
 import Link from "next/link";
 import * as yup from "yup";
-import { useFormik } from "formik"; 
-import { loginAccount } from "../api/users/userAPI";
+import { useFormik } from "formik";
 import { useRouter } from 'next/router'
 import { BootstrapButton, delete_cookie, getCookie } from "../../utils";
+import { loginAccount } from "../../features/users/userAPI";
+import { deleteCookie, getCookies, setCookie } from "cookies-next";
 
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const validationSchema = yup.object({
-    phone: yup
-      .string("Số điện thoại là bắt buộc")
-      .matches(phoneRegExp, {
-        message: "Số điện thoại không đúng định dạng",
-        excludeEmptyString: false,
-      })
-      .required("Số điện thoại là bắt buộc"),
-    password: yup
-      .string("Enter your password")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .required("Mật khẩu là bắt buộc"),
-  });
-export default function Login() { 
-  const infoUserString =
-  getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") || "";
- const router = useRouter();
+  phone: yup
+    .string("Số điện thoại là bắt buộc")
+    .matches(phoneRegExp, {
+      message: "Số điện thoại không đúng định dạng",
+      excludeEmptyString: false,
+    })
+    .required("Số điện thoại là bắt buộc"),
+  password: yup
+    .string("Enter your password")
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .required("Mật khẩu là bắt buộc"),
+});
+export default function Login() {
+  const infoUserString = getCookies('auth');
+  const router = useRouter();
   const formik = useFormik({
     initialValues: {
       phone: "",
       password: "",
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => { 
-     try {
-      loginAccount(values).then(res => {
-        const data = res?.data?.data || {}
-        const auth = {
-          id: data?.id,
-          images:data?.images,
-          memberVerify: data?.memberVerify,
-          name: data?.name,
-          totalBeingFollowed: data?.totalBeingFollowed,
-          type: data?.type
-        }
-        if(infoUserString?.length > 0){
-          delete_cookie('token')
-          delete_cookie('auth')
-        }
-        document.cookie = 'token='  + data?.token
-        document.cookie = 'auth='  + JSON.stringify(auth)
-        router.push('/')
-      });
-     } catch (error) {
-      console.log(error)
-     }
+    onSubmit: (values) => {
+      try {
+        loginAccount(values).then(res => {
+          const data = res?.data?.data || {}
+          const auth = {
+            id: data?.id,
+            images: data?.images,
+            memberVerify: data?.memberVerify,
+            name: data?.name,
+            totalBeingFollowed: data?.totalBeingFollowed,
+            type: data?.type
+          }
+          setCookie('token', data?.token);
+          setCookie('auth', JSON.stringify(auth));
+          router.push('/')
+        });
+      } catch (error) {
+        console.log(error)
+      }
     },
-  });
-
-  if(infoUserString?.length > 0){
+  }); 
+  if (Object.values(infoUserString)?.length  > 0) {
     router.push('/')
   }
   return (

@@ -11,7 +11,7 @@ import { CarIcon, GiftIcon } from "../utils/CustomIcon";
 import Link from "next/link";
 import { getCookie } from "../utils";
 import { defaultAvatarImage } from "../common/user";
-import { linkImage } from "../pages/api/Image";
+import { linkImage } from "../features/Image";
 export { Header };
 const navItems = [
   {

@@ -1,13 +1,14 @@
-import { getCookie } from "../../../utils";
+import { getCookie } from "cookies-next";
 import axiosClient from "../AxiosClient" 
 
-const token = getCookie(typeof document !== "undefined" ? document.cookie : "", "token") || undefined; 
 
+ 
 const loginAccount = (data) => { 
     return axiosClient.post("sign-in", data);
 }
 
 const logoutAccount = () => {
+    const token = getCookie('token'); 
     return axiosClient.post(`sign-out`,{},{
         headers: {
             Authorization: "Bearer " + token
@@ -16,6 +17,7 @@ const logoutAccount = () => {
 }
 
 const getDetailUser = async (id) => {
+    const token = getCookie('token'); 
     return await axiosClient.get(`members/${id}`,{
         headers: {
             Authorization: "Bearer " + token
@@ -23,6 +25,7 @@ const getDetailUser = async (id) => {
     }) 
 }
 const updateDetailUser = async ({data}) => {
+    const token = getCookie('token'); 
     return await axiosClient.put(`members`,data,{
         headers: {
             Authorization: "Bearer " + token

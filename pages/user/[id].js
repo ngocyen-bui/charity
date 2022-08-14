@@ -16,26 +16,33 @@ import PublicIcon from "@mui/icons-material/Public";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
-import { getDetailUser } from "../api/users/userAPI";
 import {
   Avatar,
   Button,
+  Dialog,
+  DialogContent,
   Divider,
+  FormControl,
   IconButton,
+  InputAdornment,
+  InputLabel,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
+  OutlinedInput,
   Slide,
   Tab,
   Tabs,
   Typography,
 } from "@mui/material";
-import { linkImage } from "../api/Image";
 import { defaultAvatarImage, defaultImage } from "../../common/user";
 import { useState } from "react";
 import Link from "next/link";
-import { delete_cookie } from "../../utils";
+import { getDetailUser } from "../../features/users/userAPI";
+import { linkImage } from "../../features/Image";
+import { deleteCookie } from "cookies-next";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const listSetting = [
   {
@@ -50,6 +57,7 @@ const listSetting = [
     key: "2",
     text: "Đổi mật khẩu",
     icon: <RepeatIcon sx={{ color: "#000" }} fontSize="small" />,
+    open: true
   },
   {
     id: 3,
@@ -92,7 +100,17 @@ export default function DetailUser() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [type, setType] = useState(1);
   const [typePost, setTypePost] = useState(0);
+  const [openModalPassWord, setOpenModalPassWord] = useState(false);
 
+  const handleClickOpenChangePassWord = () => {
+    console.log(1)
+    setOpenModalPassWord(true);
+  };
+
+  const handleCloseChangePassWord = () => {
+    setOpenModalPassWord(false);
+    handleClose();
+  };
   const { data: infoUser } = useQuery(["user", id], () => getDetailUser(id), {
     enabled: Boolean(id),
   });
@@ -114,13 +132,13 @@ export default function DetailUser() {
   const handleChangeTypePost = (event, newValue) => {
     setTypePost(newValue);
   };
-  const handleLogOut = ()=>{ 
-    delete_cookie('auth');
-    delete_cookie('token');
+  const handleLogOut = () => {
+    deleteCookie('auth')
+    deleteCookie('token')
     handleClose();
-    
+
     router.push('/user/login')
-   
+
   }
   const renderTabPanel = ({ typePost }) => {
     return (
@@ -137,7 +155,7 @@ export default function DetailUser() {
             Rất tiếc, chúng tôi không tìm thấy kết quả nào phù hợp {typePost}
           </Typography>
           <Button
-            sx={{ width: "100%", maxWidth: "300px", textTransform: "initial", marginTop: '12px'}}
+            sx={{ width: "100%", maxWidth: "300px", textTransform: "initial", marginTop: '12px' }}
             variant="contained"
             size="small"
             disabled
@@ -148,6 +166,37 @@ export default function DetailUser() {
       </TabPanel>
     );
   };
+  const RenderFormChangePassword = ({isOpen,handleClose}) => {
+    return (
+      <Dialog open={isOpen} onClose={handleClose}>
+        <DialogContent>
+        <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
+        <InputLabel htmlFor="filled-adornment-password">Password</InputLabel>
+        <OutlinedInput
+            margin="dense"
+            id={"password"}
+            label="Mật khẩu cũ"
+            type="password"
+            
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  // onClick={handleClickShowPassword}
+                  // onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                >
+                  {true ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
+         
+        </DialogContent>
+      </Dialog>
+    )
+  }
   return (
     <>
       <Header isShowSubBar={false} />
@@ -163,7 +212,7 @@ export default function DetailUser() {
                 cursor: "pointer",
                 backgroundColor: "rgba(0,0,0,0.5)",
               }}
-              onClick={()=> router.back()}
+              onClick={() => router.back()}
             >
               <ArrowBackIcon sx={{ fontSize: "20px", color: "white" }} />
             </Box>
@@ -275,12 +324,18 @@ export default function DetailUser() {
                 }}
               >
                 {listSetting?.map((e) => {
-                  if(e?.url){
-                   return <Link href={e.url} key={e?.text}>
-                    <MenuItem onClick={handleClose}>
-                      <ListItemIcon>{e?.icon}</ListItemIcon>
-                      <ListItemText>{e?.text}</ListItemText>
-                    </MenuItem>
+                  if(e?.open){
+                  return  <MenuItem key={e?.text} onClick={handleClickOpenChangePassWord}>
+                    <ListItemIcon>{e?.icon}</ListItemIcon>
+                    <ListItemText>{e?.text}</ListItemText>
+                  </MenuItem>
+                  }
+                  if (e?.url) {
+                    return <Link href={e.url} key={e?.text}>
+                      <MenuItem onClick={handleClose}>
+                        <ListItemIcon>{e?.icon}</ListItemIcon>
+                        <ListItemText>{e?.text}</ListItemText>
+                      </MenuItem>
                     </Link>
                   }
                   return (
@@ -305,17 +360,17 @@ export default function DetailUser() {
           {listType?.map((e) => {
             return (
               <Button
-              key={e?.id}
+                key={e?.id}
                 size="small"
                 variant={type === e.id ? "contained" : "text"}
                 onClick={() => handleChangeType(e?.id)}
                 sx={
                   type === e.id
                     ? {
-                        backgroundColor: "#f19e9e",
-                        marginRight: "12px",
-                        "&:hover": { backgroundColor: "#ef5d5d" },
-                      }
+                      backgroundColor: "#f19e9e",
+                      marginRight: "12px",
+                      "&:hover": { backgroundColor: "#ef5d5d" },
+                    }
                     : { marginRight: "12px", color: "#f19e9e" }
                 }
               >
@@ -330,7 +385,7 @@ export default function DetailUser() {
               direction="right"
               in={true}
               timeout={700}
-              sx={{ marginLeft: "20px" , paddingTop: '8px'}}
+              sx={{ marginLeft: "20px", paddingTop: '8px' }}
             >
               <Box>
                 <Box sx={{ display: "flex", marginTop: "10px" }}>
@@ -385,11 +440,12 @@ export default function DetailUser() {
                   })}
                 </Tabs>
               </Box>
-              {renderTabPanel({typePost})}
+              {renderTabPanel({ typePost })}
             </>
           ) : null}
         </Box>
       </Container>
+      <RenderFormChangePassword isOpen={openModalPassWord} handleClose={handleCloseChangePassWord} />
     </>
   );
 }
