@@ -1,14 +1,18 @@
-import { Box, Container, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, Container, Grid, InputAdornment, Typography } from "@mui/material";
 import { Header } from "../../components/Header";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { BootstrapButton, CssTextField } from "../../utils";
+import { BootstrapButton, CssTextField, CustomSelect } from "../../utils";
 
-import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from "react";
 import { Footer } from "../../components";
 import { getDetailUser, updateDetailUser } from "../../features/users/userAPI";
 import { getCookie } from "cookies-next";
+import { gender } from "../../common/user";
+import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+
 
 const validationSchema = yup.object({
     email: yup
@@ -27,7 +31,7 @@ const validationSchema = yup.object({
 
 export default function EditUser() {
     const [listData,setListData] = useState({});
-  const infoUser =getCookie('auth')? JSON.parse(getCookie('auth')): {};
+  const infoUser = getCookie('auth')? JSON.parse(getCookie('auth')): {};
   const { data: infoUsers } = useQuery(["user", infoUser?.id],() => getDetailUser(infoUser?.id), {
     enabled: Boolean(infoUser?.id),
   });
@@ -48,6 +52,8 @@ export default function EditUser() {
       email: listData?.email || "",
       website: listData?.websites?.website || "",
       description: "",
+      birthday: listData?.birthday|| "",
+      gender: listData?.gender || "",
     },
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -73,14 +79,14 @@ export default function EditUser() {
           <Typography variant="h6">Cập nhật thông tin</Typography>
           <Box sx={{ marginTop: "24px" }}>
             <form onSubmit={formik.handleSubmit}>
-            <CssTextField
+              <CssTextField
                 fullWidth
                 id="name"
                 name="name"
                 label="Họ và tên *"
                 variant="outlined"
                 size="small"
-                value={listData?.name}
+                value={formik.values.name}
                 disabled
                 onChange={formik.handleChange}
                 error={formik.touched.name && Boolean(formik.errors.name)}
@@ -96,9 +102,20 @@ export default function EditUser() {
                 rows={3}
                 value={formik.values.description}
                 onChange={formik.handleChange}
-                error={formik.touched.description && Boolean(formik.errors.description)}
-                helperText={formik.touched.description && formik.errors.description}
-                InputProps={{ endAdornment: <InputAdornment position="end">{(formik.values.description.trim()).length}/250 ký tự</InputAdornment> }}
+                error={
+                  formik.touched.description &&
+                  Boolean(formik.errors.description)
+                }
+                helperText={
+                  formik.touched.description && formik.errors.description
+                }
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      {formik.values.description.trim().length}/250 ký tự
+                    </InputAdornment>
+                  ),
+                }}
               />
               <CssTextField
                 fullWidth
@@ -123,9 +140,7 @@ export default function EditUser() {
                 size="small"
                 value={formik.values.address}
                 onChange={formik.handleChange}
-                error={
-                  formik.touched.address && Boolean(formik.errors.address)
-                }
+                error={formik.touched.address && Boolean(formik.errors.address)}
                 helperText={formik.touched.address && formik.errors.address}
               />
 
@@ -135,16 +150,14 @@ export default function EditUser() {
                 name="email"
                 label="Email *"
                 type="email"
-                size="small" 
-                value={formik.values.email|| listData?.email}
+                size="small"
+                value={formik.values.email}
                 onChange={formik.handleChange}
-                error={
-                  formik.touched.email && Boolean(formik.errors.email)
-                }
+                error={formik.touched.email && Boolean(formik.errors.email)}
                 helperText={formik.touched.email && formik.errors.email}
               />
 
-            <CssTextField
+              <CssTextField
                 fullWidth
                 id="facebook"
                 name="facebook"
@@ -152,7 +165,9 @@ export default function EditUser() {
                 size="small"
                 value={formik.values.facebook}
                 onChange={formik.handleChange}
-                error={formik.touched.facebook && Boolean(formik.errors.facebook)}
+                error={
+                  formik.touched.facebook && Boolean(formik.errors.facebook)
+                }
                 helperText={formik.touched.facebook && formik.errors.facebook}
               />
               <CssTextField
@@ -166,9 +181,40 @@ export default function EditUser() {
                 error={formik.touched.website && Boolean(formik.errors.website)}
                 helperText={formik.touched.website && formik.errors.website}
               />
-
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DesktopDatePicker
+                      id="birthday"
+                      name="birthday"
+                      label="Ngày sinh"
+                      inputFormat="MM/dd/yyyy"
+                      value={formik.values.birthday}
+                      onChange={(value) => {
+                        formik.setFieldValue("birthday", Date.parse(value));
+                      }}
+                      renderInput={(params) => {
+                        return (
+                          <CssTextField fullWidth  size="small" {...params} />
+                        )
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={6}>
+                  <CustomSelect
+                    id="gender"
+                    name="gender"
+                    label="Giới tính"
+                    type='gender'
+                    formik={formik}
+                    data={gender}
+                    SelectProps={{ multiple: false }}
+                  />
+                </Grid>
+              </Grid>
               <BootstrapButton
-                sx={{backgroundColor: '#f19e9e'}}
+                sx={{ backgroundColor: "#f19e9e" }}
                 variant="contained"
                 fullWidth
                 type="submit"
@@ -179,8 +225,8 @@ export default function EditUser() {
           </Box>
         </Box>
       </Container>
-      <Footer/>
+      <Footer />
     </>
-  ) 
+  ); 
     return <div>Loading...</div>
 }

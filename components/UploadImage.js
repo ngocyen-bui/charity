@@ -25,7 +25,7 @@ const UploadImage = () => {
   };
 
   const handleClose = () => {
-    setState(false);
+    setState({...state, open: false});
   };
   return (
     <React.Fragment>
@@ -67,10 +67,11 @@ const UploadImage = () => {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={state.open}
+        autoHideDuration={2000}
         onClose={handleClose}
         key={'Upload image'}
       >
-        <Alert onClose={handleClose} severity={state.type} >
+        <Alert onClose={handleClose} severity={state.type || 'info'} >
           {state.text}
         </Alert>
       </Snackbar>

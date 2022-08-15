@@ -122,7 +122,6 @@ export default function Post() {
     getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") ||
     "";
   const handleClickDetailListPost = () => {
-    // console.log('12')
   };
   const handleChooseTypePost = (e) => {
     setType(e);

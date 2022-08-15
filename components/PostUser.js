@@ -3,41 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import { useState } from "react";
 import * as yup from "yup";
+import { transportProductType } from "../common/user";
 import { getDetailUser } from "../features/users/userAPI";
-import { BootstrapButton, CssTextField, getCookie } from "../utils";
+import { BootstrapButton, CssTextField, CustomSelect, getCookie } from "../utils";
 import { UploadImage } from "./UploadImage";
 
 export { PostUser };
-const CustomSelectPostUser = ({ data, formik, type, ...rest }) => {
-  return (
-    <CssTextField
-      fullWidth
-      {...rest}
-      select
-      multiple={true}
-      size="small"
-      value={formik.values[type]}
-      SelectProps={{ multiple: true }}
-      onChange={formik.handleChange}
-      error={
-        formik.touched[type] &&
-        Boolean(formik.errors[type])
-      }
-      helperText={
-        formik.touched[type] &&
-        formik.errors[type]
-      }
-    >
-      {data?.map((e) => {
-        return (
-          <MenuItem key="2" value={e?.id}>
-            {e?.text}
-          </MenuItem>
-        );
-      })}
-    </CssTextField>
-  );
-};
+
 const required = <span style={{ color: "red" }}>*</span>;
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -67,7 +39,6 @@ const PostUser = ({ data }) => {
       enabled: isGetInfo,
     }
   );
-  console.log(JSON.stringify(infoUsers))
   
   const listInfo = infoUsers?.data?.data;
 
@@ -112,19 +83,16 @@ const PostUser = ({ data }) => {
             error={formik.touched.title && Boolean(formik.errors.title)}
             helperText={formik.touched.title && formik.errors.title}
           />
-          <CustomSelectPostUser
+          <CustomSelect
             id="transportProductType"
             name="transportProductType"
             type="transportProductType"
             label="Loại hình vận chuyển * (Có thể chọn nhiều)"
             formik={formik}
-            data={[
-              { id: 1, text: "123" },
-              { id: 2, text: "345" },
-            ]}
+            data={transportProductType}
           />
 
-          <CustomSelectPostUser
+          <CustomSelect
             id="typeOfTransportation"
             name="typeOfTransportation"
             type="typeOfTransportation"

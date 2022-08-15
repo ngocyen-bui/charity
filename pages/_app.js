@@ -1,5 +1,6 @@
 import "../styles/globals.css";
 import "../styles/_header.css";
+import 'animate.css';
 import { MuiThemeProvider } from "@material-ui/core/styles";
 import { createTheme } from "@mui/material";
 import {

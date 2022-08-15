@@ -32,10 +32,18 @@ const updateDetailUser = async ({data}) => {
         }
     }) 
 }
-
+const updateNewPassword = async ({data}) => {
+    const token = getCookie('token'); 
+    return await axiosClient.put(`members-password`,data,{
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    }) 
+}
 export {
     loginAccount,
     logoutAccount,
     getDetailUser,
-    updateDetailUser
+    updateDetailUser,
+    updateNewPassword
 }
