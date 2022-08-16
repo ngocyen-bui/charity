@@ -25,24 +25,19 @@ import { useRouter } from "next/router";
 import { Message } from "../Message";
 
 export { RenderTabPanel };
-const edit =  {id: 1, key: '1', text:'Chỉnh sửa tin'}
-const stop = {id: 2, key: '2', text:'Tạm dừng tin'}
-const active = {id: 3, key: '3', text:'Kích hoạt tin'}
-const optionsStop = [
-  edit,
-  stop
-];
-const optionsActive = [
-  edit, 
-  active
-];
-const RenderTabPanel = ({ typePost,updateType }) => {
+const edit = { id: 1, key: "1", text: "Chỉnh sửa tin" };
+const stop = { id: 2, key: "2", text: "Tạm dừng tin" };
+const active = { id: 3, key: "3", text: "Kích hoạt tin" };
+const optionsStop = [edit, stop];
+const optionsActive = [edit, active];
+
+const RenderTabPanel = ({ typePost, updateType, id }) => {
   const router = useRouter();
   const item = listTypePost.find((e) => e.id === typePost * 1);
   const initFilter = {
     page: 1,
     size: 100,
-    creatorId: 1209,
+    creatorId: id,
     isAvailable: item?.isAvailable,
     status: item?.status,
   };
@@ -61,7 +56,7 @@ const RenderTabPanel = ({ typePost,updateType }) => {
   });
 
   let options = optionsStop;
-  if(typePost === stoped?.id){
+  if (typePost === stoped?.id) {
     options = optionsActive;
   }
   const listItemPost = listDataPostFromApi?.data?.data;
@@ -71,37 +66,36 @@ const RenderTabPanel = ({ typePost,updateType }) => {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => { 
+  const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleClickMenu = (type,id)=>{
-    handleClose()
-    if(type === edit.id){
-      return router.push('/user/post/'+id)
-     }
-     let status = {}
-
-    if(type === stop?.id){
-     status = { status: stoped?.status }
+  const handleClickMenu = (type, id) => {
+    handleClose();
+    if (type === edit.id) {
+      return router.push("/user/post/" + id);
     }
-    if(type === active?.id){
-      status = { status: showing?.status }
+    let status = {};
+    if (type === stop?.id) {
+      status = { status: stoped?.status };
+    } else if (type === active?.id) {
+      status = { status: showing?.status };
     }
-    return updateStatusPost({ id: id, data:status  })
-      .then(() =>{
-        setStateUpdateStatusPost({ ...stateUpdateStatusPost, open: true })
-        updateType( status?.status);
-      }
-      )
-      .catch(() =>
-        setStateUpdateStatusPost({
-          message: "Cập nhật thât bại",
+    return updateStatusPost({ id: id, data: status })
+      .then((res) => {
+        setStateUpdateStatusPost({ ...stateUpdateStatusPost, state: true });
+        updateType(status?.status);
+      })
+      .catch((err) => {
+        return setStateUpdateStatusPost({
+          message: err?.response?.data?.message || "Cập nhật thất bại",
           type: "error",
-          open: true,
-        })
-      );
+          state: true,
+        });
+      });
+  };
+  const handleCloseMessage = ()=>{
+    setStateUpdateStatusPost({...stateUpdateStatusPost, state: false})
   }
-
   if (isFetching)
     return (
       <Box sx={{ alignItems: "center" }}>
@@ -147,8 +141,11 @@ const RenderTabPanel = ({ typePost,updateType }) => {
                       <Box sx={{ display: "flex", gap: "10px" }}>
                         <Avatar
                           alt="Avatar"
-                          sx={{ width: 56, height: 56,
-                            boxShadow: '0px 4px 10px #ddd' }}
+                          sx={{
+                            width: 56,
+                            height: 56,
+                            boxShadow: "0px 4px 10px #ddd",
+                          }}
                           src={
                             linkImage(e?.creator?.images?.image) ||
                             linkImage(defaultAvatarImage)
@@ -195,7 +192,7 @@ const RenderTabPanel = ({ typePost,updateType }) => {
                       <Menu
                         id="long-menu"
                         MenuListProps={{
-                          'aria-labelledby': 'long-button',
+                          "aria-labelledby": "long-button",
                         }}
                         anchorEl={anchorEl}
                         open={open}
@@ -203,20 +200,34 @@ const RenderTabPanel = ({ typePost,updateType }) => {
                         PaperProps={{
                           style: {
                             maxHeight: 20 * 4.5,
-                            width: '20ch',
+                            width: "20ch",
                           },
                         }}
                       >
                         {options.map((option) => {
-                          if(typePost === item?.id){
-                            return  <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
-                              {option?.text}
-                            </MenuItem>
+                          if (typePost === item?.id) {
+                            return (
+                              <MenuItem
+                                key={option?.id}
+                                value={option?.key}
+                                onClick={() =>
+                                  handleClickMenu(option?.id, e?.id)
+                                }
+                              >
+                                {option?.text}
+                              </MenuItem>
+                            );
                           }
 
-                          return  <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
-                          {option?.text}
-                        </MenuItem>
+                          return (
+                            <MenuItem
+                              key={option?.id}
+                              value={option?.key}
+                              onClick={() => handleClickMenu(option?.id, e?.id)}
+                            >
+                              {option?.text}
+                            </MenuItem>
+                          );
                         })}
                       </Menu>
                     </Box>
@@ -231,6 +242,7 @@ const RenderTabPanel = ({ typePost,updateType }) => {
                         width="340px"
                         height="260px"
                         style={{ borderRadius: "10px" }}
+                        alt="Image"
                       />
                     </Box>
                     <Box>
@@ -248,7 +260,11 @@ const RenderTabPanel = ({ typePost,updateType }) => {
                       </Typography>
                       <Typography
                         variant="body2"
-                        sx={{ fontSize: "12px", height: '40px', lineHeight: '20px' }}
+                        sx={{
+                          fontSize: "12px",
+                          height: "40px",
+                          lineHeight: "20px",
+                        }}
                         className="text-two-line"
                       >
                         {e?.content}
@@ -284,7 +300,7 @@ const RenderTabPanel = ({ typePost,updateType }) => {
         </Button>
       </Box>
 
-      <Message {...stateUpdateStatusPost}/>
+      <Message {...stateUpdateStatusPost} handleCloseMessage={handleCloseMessage}  />
     </TabPanel>
   );
 };

@@ -1,11 +1,10 @@
 import { Alert, Snackbar } from "@mui/material"
-import { useState } from "react"
 
 
 export {Message}
 
-const Message = ({state=false, message="",handleCloseMessage, type='info', time=2000}) =>{
-     
+const Message = ({state=false, message="", type='info', time=2000, handleCloseMessage}) =>{
+    
     return (
         <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "center" }}

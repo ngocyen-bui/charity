@@ -94,7 +94,6 @@ export default function DetailUser() {
     setType(e);
   };
   const handleChangeTypePost = ( newValue) => {
-    console.log(newValue)
     setTypePost(newValue);
   };
   const handleLogOut = () => {
@@ -410,7 +409,7 @@ export default function DetailUser() {
                   })}
                 </Tabs>
               </Box>
-              <RenderTabPanel typePost={typePost} updateType={handleChangeTypePost}/>
+              <RenderTabPanel typePost={typePost} updateType={handleChangeTypePost} id={id}/>
             </Box>
           ) : null}
         </Box>
