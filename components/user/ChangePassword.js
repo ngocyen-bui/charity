@@ -6,6 +6,7 @@ import { Alert, Box, Dialog, DialogContent, IconButton, InputAdornment, Snackbar
 import { BootstrapButton, CssTextField } from '../../utils';
 import { useState } from 'react';
 import { useFormik } from 'formik';
+import { updateNewPassword } from '../../features/users/userAPI';
 
 
 
@@ -66,7 +67,7 @@ const RenderFormChangePassword = ({ isOpen, handleClose }) => {
         updateNewPassword({
           data: { oldPassword: values.oldPassword, password: values.newPassword },
         })
-        .then((res) => {
+        .then(() => {
           setState({
             open: true,
             text: 'Cập nhật mật khẩu thành công',
@@ -95,6 +96,7 @@ const RenderFormChangePassword = ({ isOpen, handleClose }) => {
             <Box>
               <Typography variant="body2" >Mật khẩu hiện tại {required}</Typography>
                 <CssTextField
+                  fullWidth
                   margin="dense"
                   id="oldPassword"
                   placeholder="Mật khẩu hiện tại "
@@ -121,6 +123,7 @@ const RenderFormChangePassword = ({ isOpen, handleClose }) => {
             <Box>
               <Typography variant="body2" >Mật khẩu mới {required}</Typography>
                 <CssTextField
+                  fullWidth
                   margin="dense"
                   id={"newPassword"}
                   placeholder="Mật khẩu mới"
@@ -147,7 +150,8 @@ const RenderFormChangePassword = ({ isOpen, handleClose }) => {
             </Box>
             <Box>
               <Typography variant="body2" >Xác nhận mật khẩu mới {required}</Typography>
-                <CssTextField  
+                <CssTextField
+                  fullWidth  
                   margin="dense"
                   id={"confirmPassword"}
                   placeholder="Xác nhận mật khẩu mới *"

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { deleteCookie } from "cookies-next";
+import Router from "next/router";
 
 const axiosClient = axios.create({
     baseURL: "https://lubrytics.com:8443/charity-web-api/v1/"
@@ -7,7 +9,10 @@ axiosClient.interceptors.response.use(function (response) {
     return response
 }, function (error) {
     if (error?.response?.status === 401) { 
-        // window.location.replace("/")/
+        alert('Đăng nhâp lại.')
+        deleteCookie('auth')
+        deleteCookie('token')
+        Router.push('/user/login') 
     }
     return Promise.reject(error)
 })

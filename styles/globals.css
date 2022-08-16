@@ -93,5 +93,13 @@ a {
    color: #64b5ec;
    cursor: pointer;
 }
+.text-two-line{
+  font-family: "Nunito Sans";
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 25px;
+}
 @import url('./_detailUser.css');
 @import url('./_post.css');

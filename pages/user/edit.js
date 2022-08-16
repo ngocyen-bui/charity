@@ -51,7 +51,7 @@ export default function EditUser() {
       address: listData?.address || "",
       email: listData?.email || "",
       website: listData?.websites?.website || "",
-      description: "",
+      description: listData?.description||"",
       birthday: listData?.birthday|| "",
       gender: listData?.gender || "",
     },

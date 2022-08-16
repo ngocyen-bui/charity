@@ -114,16 +114,21 @@ const listSetting = [
       id: 0,
       key: '0',
       text: 'Đang hiển thị',
+      status: 1,
+      isAvailable: 1,
     },
     {
       id: 1,
       key: '1',
       text: 'Tạm ngưng',
+      status: -1,
+      isAvailable: 1,
     },
     {
       id: 2,
       key: '2',
       text: 'Tin hết hạn',
+      isAvailable: -1,
     }
   ]
 export {

@@ -1,89 +1,262 @@
-import { Avatar, Box, Button, Chip, Grid, IconButton, Paper, Slide, Stack, Typography } from "@mui/material";
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
+  Slide,
+  Stack,
+  Typography,
+} from "@mui/material";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { getPostOfUser } from "../../features/users/userAPI";
+import { useQuery } from "@tanstack/react-query";
+import { listTypePost } from "../../common/user";
+import { linkImage } from "../../features/Image";
+import Image from "next/image";
+import moment from "moment";
+import { useState } from "react";
 
-export {RenderTabPanel}
+import { useRouter } from "next/router";
+
+export { RenderTabPanel };
+const edit =  {id: 1, key: '1', text:'Chỉnh sửa tin'}
+const stop = {id: 2, key: '2', text:'Tạm dừng tin'}
+const options = [
+  edit,
+  stop,
+];
+
 const RenderTabPanel = ({ typePost }) => {
- 
+  
+  const router = useRouter();
+  const item = listTypePost.find((e) => e.id === typePost * 1);
+  const initFilter = {
+    page: 1,
+    size: 100,
+    creatorId: 1209,
+    isAvailable: item?.isAvailable,
+    status: item?.status,
+  };
+  const filter =
+    "?" +
+    new URLSearchParams(JSON.parse(JSON.stringify(initFilter))).toString();
+  const { data: listDataPostFromApi, isFetching } = useQuery(
+    ["posts", initFilter],
+    () => getPostOfUser({ filter })
+  );
+  const listItemPost = listDataPostFromApi?.data?.data;
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => { 
+    setAnchorEl(null);
+  };
+  const handleClickMenu = (type,id)=>{
+    console.log(type,id)
+    if(type === edit.id){
+      router.push('/user/post/'+id)
+    }
+    handleClose()
+  }
+
+  if (isFetching)
     return (
-      <TabPanel value={typePost} index={typePost}>
-        <Box
+      <Box sx={{ alignItems: "center" }}>
+        <Typography
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center", 
+            textAlign: "center",
+            fontSize: "20px",
+            color: "#6a6a6a",
+            lineHeight: "100px",
           }}
         >
-          {typePost===1 ? ( 
-              <Grid container spacing={1}>
-                <Grid item xs={6}> 
-                  <Paper className="animate__animated animate__backInUp"  variant="outlined" sx={{padding: '24px'}}>
-                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                      <Box  sx={{display: 'flex', gap: '10px'}}>
-                      <Avatar alt="Avatar" sx={{ width: 56, height: 56 }}>
-                        H
-                      </Avatar>
-                      <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-                        <Typography variant="body2" sx={{textTransform: 'uppercase'}} >Name</Typography>
-                        <Stack direction="row" spacing={1}>
-                          <Chip size="small" label="primary" color="primary" />
-                          <Chip size="small" label="success" color="success" />
-                        </Stack>
-                      </Box>
-                      </Box>
-                      <IconButton sx={{color: 'rgb(254, 146, 146)'}} component="label">
-                            <MoreHorizIcon />
-                      </IconButton>
-                      
-                    </Box>
-                  </Paper> 
-                  
-                </Grid>
-                 
-              </Grid> 
-          ) : (
-            <Typography variant="h6" component='p' >
-              Rất tiếc, chúng tôi không tìm thấy kết quả nào phù hợp {typePost}
-            </Typography>
-          )}
-
-          <Button
-            sx={{
-              width: "100%",
-              maxWidth: "300px",
-              textTransform: "initial",
-              marginTop: "12px",
-            }}
-            variant="contained"
-            size="small"
-            disabled
-          >
-            Bạn đã xem đến cuối danh sách
-          </Button>
-        </Box>
-      </TabPanel>
+          Loading...
+        </Typography>
+      </Box>
     );
-  };
+  return (
+    <TabPanel value={typePost} index={typePost}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {listItemPost?.length > 0 ? (
+          <Grid container spacing={1}>
+            {listItemPost?.map((e) => {
+              return (
+                <Grid item xs={6} key={e?.id}>
+                  <Paper
+                    className="animate__animated animate__backInUp"
+                    variant="outlined"
+                    sx={{ padding: "24px", cursor: "pointer" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", gap: "10px" }}>
+                        <Avatar
+                          alt="Avatar"
+                          sx={{ width: 56, height: 56 }}
+                          src={
+                            linkImage(e?.creator?.images?.image) ||
+                            linkImage(defaultAvatarImage)
+                          }
+                        ></Avatar>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              textTransform: "uppercase",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {e?.creator?.name}
+                          </Typography>
+                          <Stack direction="row" spacing={1}>
+                            <Chip
+                              size="small"
+                              label="Cá nhân"
+                              color="primary"
+                            />
+                            <Chip
+                              size="small"
+                              label="Nhà cung cấp"
+                              color="success"
+                            />
+                          </Stack>
+                        </Box>
+                      </Box>
+                      <IconButton
+                        sx={{ color: "rgb(254, 146, 146)" }}
+                        component="label"
+                        aria-haspopup="true"
+                        onClick={handleClick}
+                      >
+                        <MoreHorizIcon />
+                      </IconButton>
+                      <Menu
+                        id="long-menu"
+                        MenuListProps={{
+                          'aria-labelledby': 'long-button',
+                        }}
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                        PaperProps={{
+                          style: {
+                            maxHeight: 20 * 4.5,
+                            width: '20ch',
+                          },
+                        }}
+                      >
+                        {options.map((option) => (
+                          <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
+                            {option?.text}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </Box>
+                    <Box
+                      sx={{
+                        borderBottom: "1px solid #ddd",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <Image
+                        src={linkImage(e?.images?.image)}
+                        width="340px"
+                        height="260px"
+                        style={{ borderRadius: "10px" }}
+                      />
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          minHeight: "50px",
+                          fontWeight: "600",
+                          fontSize: "18px",
+                          margin: "10px 0 16px 0",
+                        }}
+                        className="text-two-line"
+                      >
+                        {e?.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontSize: "12px", height: '40px', lineHeight: '20px' }}
+                        className="text-two-line"
+                      >
+                        {e?.content}
+                      </Typography>
+                      <Typography variant="body1">
+                        {moment(e?.updatedAt).format("HH:mm - DD/MM/yyyy") +
+                          " - Toàn quốc"}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+        ) : (
+          <Typography variant="h6" component="p">
+            Rất tiếc, chúng tôi không tìm thấy kết quả nào phù hợp
+          </Typography>
+        )}
 
+        <Button
+          sx={{
+            width: "100%",
+            maxWidth: "300px",
+            textTransform: "initial",
+            marginTop: "12px",
+          }}
+          variant="contained"
+          size="small"
+          disabled
+        >
+          Bạn đã xem đến cuối danh sách
+        </Button>
+      </Box>
+    </TabPanel>
+  );
+};
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props;
-  
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`post-tabpanel-${index}`}
-        aria-labelledby={`post-tab-${index}`}
-        {...other}
-      >
-        {value === index && (
-          <Box sx={{ p: 3 }}>
-            {children}
-          </Box>
-        )}
-      </div>
-    );
-  }
-  
-  
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`post-tabpanel-${index}`}
+      aria-labelledby={`post-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}

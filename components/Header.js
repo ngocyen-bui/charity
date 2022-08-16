@@ -6,12 +6,14 @@ import PublicIcon from "@mui/icons-material/Public";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CarIcon, GiftIcon } from "../utils/CustomIcon";
 import Link from "next/link";
-import { getCookie } from "../utils";
 import { defaultAvatarImage } from "../common/user";
 import { linkImage } from "../features/Image";
+import { getCookie, setCookie } from "cookies-next";
+import { useQuery } from "@tanstack/react-query";
+import { getDetailUser } from "../features/users/userAPI";
 export { Header };
 const navItems = [
   {
@@ -73,12 +75,17 @@ const subNavItems = [
   },
 ];
 
-function Header({isShowSubBar=true}) {
+function Header({isShowSubBar=true, isChange=false}) {
   const [isNavBarActive, setIsNavBarActive] = useState(1);
-  const infoUserString =
-    getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") || "";
+  const infoUserString = getCookie('auth')
   const infoUser = infoUserString ? JSON.parse(infoUserString) : {};
 
+    
+  const { data } = useQuery(["user", infoUser], () => getDetailUser(infoUser?.id), {enabled: isChange});
+  console.log(isChange)
+  useEffect(()=>{
+    
+  },[isChange])
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -86,8 +93,9 @@ function Header({isShowSubBar=true}) {
     setIsNavBarActive(val * 1);
   };
   return (
-    <Box>
-      <div position="static" className="header-layout" component="nav">
+    <>
+     <Box sx={{position:"fixed", top: '0', right: '0', left: '0', zIndex: '99'}}>
+      <div position="static" style={isShowSubBar ? {boxShadow: 'none'}: {}} className={"header-layout"} component="nav">
         <Container maxWidth="md">
           <Box
             sx={{
@@ -240,5 +248,8 @@ function Header({isShowSubBar=true}) {
         </div>
       )}
     </Box>
+    <Box sx={{height: isShowSubBar?'107px':'55px'}}></Box>
+    </>
+   
   );
 }

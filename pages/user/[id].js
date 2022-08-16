@@ -40,7 +40,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { getDetailUser, updateDetailUser, updateNewPassword } from "../../features/users/userAPI";
 import { linkImage, upload } from "../../features/Image";
-import { deleteCookie } from "cookies-next"; 
+import { deleteCookie, setCookie } from "cookies-next"; 
 import { RenderFormChangePassword, RenderTabPanel } from "../../components";
 
 
@@ -52,6 +52,7 @@ export default function DetailUser() {
   const [type, setType] = useState(1);
   const [typePost, setTypePost] = useState(0);
   const [openModalPassWord, setOpenModalPassWord] = useState(false);
+  const [isChangeAvatar, setIsChangeAvatar] = useState(false)
 
   const { data: infoUser } = useQuery(["user", id], () => getDetailUser(id), {
     enabled: Boolean(id),
@@ -63,6 +64,7 @@ export default function DetailUser() {
   });
   const mutation = useMutation(updateDetailUser, {
     onSuccess: () => {
+      setIsChangeAvatar(true)
       queryClient.invalidateQueries("user");
     },
   });
@@ -117,7 +119,7 @@ export default function DetailUser() {
   };
   const handleUploadAvatar = (event) => {
     let file = event.target.files[0];
-    upload(file).then((res) => {
+    upload(file).then((res) => { 
       setStateUploadImages({
         text: "Cập nhật ảnh đại diện thành công",
         open: true,
@@ -143,7 +145,7 @@ export default function DetailUser() {
  
   return (
     <>
-      <Header isShowSubBar={false} />
+      <Header isShowSubBar={false} isChange={isChangeAvatar} />
       <Container maxWidth="md">
         <div className="div-cover ">
           <Box sx={{ position: "absolute", top: "10px", left: "10px" }}>
@@ -405,7 +407,7 @@ export default function DetailUser() {
                   })}
                 </Tabs>
               </Box>
-              <Box>{RenderTabPanel({ typePost })}</Box>
+              <RenderTabPanel typePost={typePost}/>
             </Box>
           ) : null}
         </Box>
