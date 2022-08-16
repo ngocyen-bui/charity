@@ -93,7 +93,8 @@ export default function DetailUser() {
   const handleChangeType = (e) => {
     setType(e);
   };
-  const handleChangeTypePost = (event, newValue) => {
+  const handleChangeTypePost = ( newValue) => {
+    console.log(newValue)
     setTypePost(newValue);
   };
   const handleLogOut = () => {
@@ -207,6 +208,7 @@ export default function DetailUser() {
                   width: "90px",
                   height: "90px",
                   border: "1px solid rgb(221, 221, 221)",
+                  boxShadow: '0px 4px 10px #ddd'
                 }}
                 src={
                   listData?.images?.avatar
@@ -393,13 +395,14 @@ export default function DetailUser() {
               <Box sx={{ borderBottom: 1, borderColor: "#ddd" }}>
                 <Tabs
                   value={typePost}
-                  onChange={handleChangeTypePost}
+                  onChange={(e,i)=>handleChangeTypePost(i)}
                   aria-label="basic tabs example"
                 >
                   {listTypePost?.map((e) => {
                     return (
                       <Tab
                         key={e?.key}
+                        value={e?.id}
                         label={e?.text}
                         {...a11yProps(e?.key)}
                       />
@@ -407,7 +410,7 @@ export default function DetailUser() {
                   })}
                 </Tabs>
               </Box>
-              <RenderTabPanel typePost={typePost}/>
+              <RenderTabPanel typePost={typePost} updateType={handleChangeTypePost}/>
             </Box>
           ) : null}
         </Box>

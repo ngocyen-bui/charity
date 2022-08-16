@@ -4,9 +4,11 @@ import Link from "next/link";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { useRouter } from 'next/router'
-import { BootstrapButton, delete_cookie, getCookie } from "../../utils";
+import { BootstrapButton } from "../../utils";
 import { loginAccount } from "../../features/users/userAPI";
-import { deleteCookie, getCookies, setCookie } from "cookies-next";
+import { getCookies, setCookie } from "cookies-next";
+import { Message } from "../../components/Message";
+import { useState } from "react";
 
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -26,6 +28,7 @@ const validationSchema = yup.object({
 export default function Login() {
   const infoUserString = getCookies('auth');
   const router = useRouter();
+  const [stateLogin, setStateLogin] = useState(false);
   const formik = useFormik({
     initialValues: {
       phone: "",
@@ -33,7 +36,6 @@ export default function Login() {
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      try {
         loginAccount(values).then(res => {
           const data = res?.data?.data || {}
           const auth = {
@@ -47,12 +49,12 @@ export default function Login() {
           setCookie('token', data?.token);
           setCookie('auth', JSON.stringify(auth));
           router.push('/')
-        });
-      } catch (error) {
-        console.log(error)
-      }
+        }).catch(err => { setStateLogin(true)});
     },
   }); 
+  const handleCloseMessage = ()=>{
+    setStateLogin(false)
+  }
   if (Object.values(infoUserString)?.length  > 0) {
     router.push('/')
   }
@@ -114,6 +116,7 @@ export default function Login() {
                 label="Số điện thoại"
                 className="field-login"
                 variant="filled"
+                title="phone"
                 value={formik.values.phone}
                 onChange={formik.handleChange}
                 error={formik.touched.phone && Boolean(formik.errors.phone)}
@@ -128,6 +131,7 @@ export default function Login() {
                 id="password"
                 name="password"
                 label="Mật khẩu"
+                title="password"
                 type="password"
                 variant="filled"
                 value={formik.values.password}
@@ -175,7 +179,7 @@ export default function Login() {
           Kết nối yêu thương @2022
         </Typography>
       </Box>
-     
+        <Message state={stateLogin} handleCloseMessage={handleCloseMessage} message={'Số điện thoại hoặc mật khẩu không đúng!'} type={'error'} />
     </Box>
   );
 }

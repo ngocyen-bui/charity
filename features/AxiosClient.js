@@ -9,7 +9,7 @@ axiosClient.interceptors.response.use(function (response) {
     return response
 }, function (error) {
     if (error?.response?.status === 401) { 
-        alert('Đăng nhâp lại.')
+        alert('Tài khoản của bạn đã hết hiệu lực. Vui lòng đăng nhập lại.')
         deleteCookie('auth')
         deleteCookie('token')
         Router.push('/user/login') 

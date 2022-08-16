@@ -13,26 +13,30 @@ import {
   Typography,
 } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { getPostOfUser } from "../../features/users/userAPI";
+import { getPostOfUser, updateStatusPost } from "../../features/users/userAPI";
 import { useQuery } from "@tanstack/react-query";
-import { listTypePost } from "../../common/user";
+import { listTypePost, showing, stoped } from "../../common/user";
 import { linkImage } from "../../features/Image";
 import Image from "next/image";
 import moment from "moment";
 import { useState } from "react";
 
 import { useRouter } from "next/router";
+import { Message } from "../Message";
 
 export { RenderTabPanel };
 const edit =  {id: 1, key: '1', text:'Chỉnh sửa tin'}
 const stop = {id: 2, key: '2', text:'Tạm dừng tin'}
-const options = [
+const active = {id: 3, key: '3', text:'Kích hoạt tin'}
+const optionsStop = [
   edit,
-  stop,
+  stop
 ];
-
-const RenderTabPanel = ({ typePost }) => {
-  
+const optionsActive = [
+  edit, 
+  active
+];
+const RenderTabPanel = ({ typePost,updateType }) => {
   const router = useRouter();
   const item = listTypePost.find((e) => e.id === typePost * 1);
   const initFilter = {
@@ -49,6 +53,17 @@ const RenderTabPanel = ({ typePost }) => {
     ["posts", initFilter],
     () => getPostOfUser({ filter })
   );
+
+  const [stateUpdateStatusPost, setStateUpdateStatusPost] = useState({
+    state: false,
+    message: "Cập nhật thành công",
+    type: "success",
+  });
+
+  let options = optionsStop;
+  if(typePost === stoped?.id){
+    options = optionsActive;
+  }
   const listItemPost = listDataPostFromApi?.data?.data;
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -60,11 +75,31 @@ const RenderTabPanel = ({ typePost }) => {
     setAnchorEl(null);
   };
   const handleClickMenu = (type,id)=>{
-    console.log(type,id)
-    if(type === edit.id){
-      router.push('/user/post/'+id)
-    }
     handleClose()
+    if(type === edit.id){
+      return router.push('/user/post/'+id)
+     }
+     let status = {}
+
+    if(type === stop?.id){
+     status = { status: stoped?.status }
+    }
+    if(type === active?.id){
+      status = { status: showing?.status }
+    }
+    return updateStatusPost({ id: id, data:status  })
+      .then(() =>{
+        setStateUpdateStatusPost({ ...stateUpdateStatusPost, open: true })
+        updateType( status?.status);
+      }
+      )
+      .catch(() =>
+        setStateUpdateStatusPost({
+          message: "Cập nhật thât bại",
+          type: "error",
+          open: true,
+        })
+      );
   }
 
   if (isFetching)
@@ -112,7 +147,8 @@ const RenderTabPanel = ({ typePost }) => {
                       <Box sx={{ display: "flex", gap: "10px" }}>
                         <Avatar
                           alt="Avatar"
-                          sx={{ width: 56, height: 56 }}
+                          sx={{ width: 56, height: 56,
+                            boxShadow: '0px 4px 10px #ddd' }}
                           src={
                             linkImage(e?.creator?.images?.image) ||
                             linkImage(defaultAvatarImage)
@@ -171,11 +207,17 @@ const RenderTabPanel = ({ typePost }) => {
                           },
                         }}
                       >
-                        {options.map((option) => (
-                          <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
-                            {option?.text}
-                          </MenuItem>
-                        ))}
+                        {options.map((option) => {
+                          if(typePost === item?.id){
+                            return  <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
+                              {option?.text}
+                            </MenuItem>
+                          }
+
+                          return  <MenuItem key={option?.id} value={option?.key} onClick={() => handleClickMenu(option?.id,e?.id)}>
+                          {option?.text}
+                        </MenuItem>
+                        })}
                       </Menu>
                     </Box>
                     <Box
@@ -211,7 +253,7 @@ const RenderTabPanel = ({ typePost }) => {
                       >
                         {e?.content}
                       </Typography>
-                      <Typography variant="body1">
+                      <Typography variant="body2">
                         {moment(e?.updatedAt).format("HH:mm - DD/MM/yyyy") +
                           " - Toàn quốc"}
                       </Typography>
@@ -241,6 +283,8 @@ const RenderTabPanel = ({ typePost }) => {
           Bạn đã xem đến cuối danh sách
         </Button>
       </Box>
+
+      <Message {...stateUpdateStatusPost}/>
     </TabPanel>
   );
 };

@@ -78,14 +78,22 @@ const subNavItems = [
 function Header({isShowSubBar=true, isChange=false}) {
   const [isNavBarActive, setIsNavBarActive] = useState(1);
   const infoUserString = getCookie('auth')
-  const infoUser = infoUserString ? JSON.parse(infoUserString) : {};
-
+  let infoUser = infoUserString ? JSON.parse(infoUserString) : {};
     
   const { data } = useQuery(["user", infoUser], () => getDetailUser(infoUser?.id), {enabled: isChange});
-  console.log(isChange)
   useEffect(()=>{
-    
-  },[isChange])
+    const auth = {
+      id: data?.data?.data?.id,
+      images: data?.data?.data?.images,
+      memberVerify: data?.data?.data?.memberVerify,
+      name: data?.data?.data?.name,
+      totalBeingFollowed: data?.data?.data?.totalBeingFollowed,
+      type: data?.data?.data?.type
+    }
+    if(data?.data?.data){
+        setCookie('auth', auth)
+    }
+  },[data])
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };

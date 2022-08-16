@@ -109,27 +109,30 @@ const listSetting = [
       text: "Tin của tôi",
     },
   ];
+  const showing =  {
+    id: 0,
+    key: '0',
+    text: 'Đang hiển thị',
+    status: 1,
+    isAvailable: 1,
+  }
+  const stoped = {
+    id: 1,
+    key: '1',
+    text: 'Tạm ngưng',
+    status: -1,
+    isAvailable: 1,
+  }
+  const ended = {
+    id: 2,
+    key: '2',
+    text: 'Tin hết hạn',
+    isAvailable: -1,
+  }
   const listTypePost = [
-    {
-      id: 0,
-      key: '0',
-      text: 'Đang hiển thị',
-      status: 1,
-      isAvailable: 1,
-    },
-    {
-      id: 1,
-      key: '1',
-      text: 'Tạm ngưng',
-      status: -1,
-      isAvailable: 1,
-    },
-    {
-      id: 2,
-      key: '2',
-      text: 'Tin hết hạn',
-      isAvailable: -1,
-    }
+    showing,
+    stoped,
+    ended
   ]
 export {
     defaultImage,
@@ -138,5 +141,8 @@ export {
     transportProductType,
     listSetting,
     listType,
-    listTypePost
+    listTypePost,
+    showing,
+    stoped,
+    ended
 }

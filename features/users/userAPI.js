@@ -40,7 +40,14 @@ const updateNewPassword = async ({data}) => {
         }
     }) 
 }
-
+const updateStatusPost = async ({id,data}) => {
+    const token = getCookie('token'); 
+    return await axiosClient.put(`posts-status/${id}`,data,{
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    }) 
+}
 const getPostOfUser = async ({filter}) => {
     const token = getCookie('token'); 
     return await axiosClient.get(`posts${filter}`,{
@@ -56,5 +63,6 @@ export {
     getDetailUser,
     updateDetailUser,
     updateNewPassword,
-    getPostOfUser
+    getPostOfUser,
+    updateStatusPost
 }
