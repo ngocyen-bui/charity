@@ -1,8 +1,10 @@
-import { Alert, CardContent, Grid, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, CardContent, Grid, IconButton, Snackbar, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
 import { upload } from "../features/Image";
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 export { UploadImage };
 const UploadImage = () => {
 
@@ -28,8 +30,8 @@ const UploadImage = () => {
     setState({...state, open: false});
   };
   return (
-    <React.Fragment>
-      <CardContent sx={{ padding: '0 !important' }}>
+    <>
+      <CardContent sx={{ padding: '0 !important' , position: 'relative'}}>
         {src ? <img src={src} style={{ width: '100px', height: '100px' }}></img> :
           <Grid
             container
@@ -63,7 +65,16 @@ const UploadImage = () => {
               </Typography>
             </label>
           </Grid>}
+          <Box sx={{height: '20px', width: '100px', alignItems: 'center', position: 'absolute', bottom: '0px', display: 'flex', justifyContent: 'center', gap: '6px', background: '#ddd',}}> 
+        <VisibilityIcon sx={{cursor: 'pointer', width: '18px'}}/> 
+         <label style={{height: '24px'}} for="upload-image-post">
+          <input id='upload-image-post' hidden accept="image/*" type="file" />
+          <CloudUploadIcon   sx={{cursor: 'pointer', width: '18px'}}/> 
+         </label>
+        <DeleteIcon sx={{cursor: 'pointer', width: '18px'}}/>
+      </Box>
       </CardContent>
+     
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={state.open}
@@ -75,6 +86,6 @@ const UploadImage = () => {
           {state.text}
         </Alert>
       </Snackbar>
-    </React.Fragment>
+    </>
   );
 };

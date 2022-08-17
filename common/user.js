@@ -129,7 +129,7 @@ const ended = {
   text: 'Tin hết hạn',
   isAvailable: -1,
 }
-const listTypePost = [
+const listTypePostDetails = [
   showing,
   stoped,
   ended
@@ -170,7 +170,7 @@ export {
   transportProductType,
   listSetting,
   listType,
-  listTypePost,
+  listTypePostDetails,
   showing,
   stoped,
   ended,

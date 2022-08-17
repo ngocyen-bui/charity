@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, Container, Grid, Typography } from "@mui/material";
-import { Header } from "../../components";
+import { BackText, Header } from "../../components";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
@@ -15,9 +15,6 @@ import { defaultAvatarImage, listTypeAccount } from "../../common/user";
 export default function FollowerUser() {
     const router = useRouter()
     const {id, name} = router.query;
-    const handleBackRouter = () => {
-        router.back()
-    }
     const initFilter ={
         followState:-1,
         createdFrom: undefined,
@@ -49,17 +46,7 @@ export default function FollowerUser() {
         <Header isShowSubBar={false} />
         <Container maxWidth="md">
           <Box sx={{ padding: "24px" }}>
-            <Typography
-              sx={{
-                fontSize: "12px",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}
-              variant="body2"
-              onClick={handleBackRouter}
-            >
-              Trở về
-            </Typography>
+           <BackText />
             <Typography variant="h6">
               Danh sách yêu thương ({pageInfo?.total})
             </Typography>

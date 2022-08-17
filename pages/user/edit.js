@@ -7,7 +7,7 @@ import { BootstrapButton, CssTextField, CustomSelect } from "../../utils";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from "react";
-import { Footer } from "../../components";
+import { BackText, Footer } from "../../components";
 import { getDetailUser, updateDetailUser } from "../../features/users/userAPI";
 import { getCookie } from "cookies-next";
 import { gender, listTypeAccount, organization, persional, sponsor } from "../../common/user";
@@ -76,7 +76,8 @@ export default function EditUser() {
     representName: yup
     .string()
     .required("Tên người đại diện là bắt buộc"),
-    totalMembers: yup.string()
+    totalMembers: yup.number()
+    .min(0,'Số lượng thành viên phải lớn hơn 0')
     .required("Số lượng thành viên là bắt buộc")
   }
   if(isOrganization){
@@ -121,6 +122,7 @@ export default function EditUser() {
       <Header isShowSubBar={false} />
       <Container maxWidth="md">
         <Box sx={{ padding: "24px" }}>
+          <BackText />
           <Typography variant="h6">Cập nhật thông tin</Typography>
           <Box sx={{ marginTop: "24px" }}>
             <form onSubmit={formik.handleSubmit}>

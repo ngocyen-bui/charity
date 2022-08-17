@@ -35,7 +35,7 @@ import {
   defaultImage,
   listSetting,
   listType,
-  listTypePost,
+  listTypePostDetails,
   listTypeAccount
 } from "../../common/user";
 import { useState } from "react";
@@ -444,7 +444,7 @@ export default function DetailUser() {
                   onChange={(e, i) => handleChangeTypePost(i)}
                   aria-label="basic tabs example"
                 >
-                  {listTypePost?.map((e) => {
+                  {listTypePostDetails?.map((e) => {
                     return (
                       <Tab
                         key={e?.key}

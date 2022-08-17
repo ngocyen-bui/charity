@@ -1,11 +1,12 @@
 import { Box, Checkbox, FormControlLabel, Grid, MenuItem, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { getCookie } from "cookies-next";
 import { useFormik } from "formik";
 import { useState } from "react";
 import * as yup from "yup";
 import { transportProductType } from "../common/user";
 import { getDetailUser } from "../features/users/userAPI";
-import { BootstrapButton, CssTextField, CustomSelect, getCookie } from "../utils";
+import { BootstrapButton, CssTextField, CustomSelect } from "../utils";
 import { UploadImage } from "./UploadImage";
 
 export { PostUser };
@@ -24,14 +25,10 @@ const validationSchema = yup.object({
     .required("Số điện thoại là bắt buộc"),
 });
 
-const PostUser = ({ data }) => {
-
+const PostUser = ({ data }) => { 
   const [dataUser, setDataUser] = useState({});
-  const [isGetInfo, setIsGetInfo] = useState(false)
-  const infoUserString =
-    getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") ||
-    "";
-  const infoUser = infoUserString ? JSON.parse(infoUserString) : {};
+  const [isGetInfo, setIsGetInfo] = useState(false);
+  const infoUser = getCookie('auth') ? JSON.parse(getCookie('auth')) : {};
   const { data: infoUsers } = useQuery(
     ["user", infoUser?.id],
     () => getDetailUser(( infoUser?.id)),
@@ -41,7 +38,7 @@ const PostUser = ({ data }) => {
   );
   
   const listInfo = infoUsers?.data?.data;
-
+    console.log(infoUser)
   const handleCheckInfo = (val) => {
     setIsGetInfo(val?.target?.checked);
   };
@@ -51,7 +48,7 @@ const PostUser = ({ data }) => {
       content: "",
       typeOfTransportation: [],
       transportProductType: [],
-      name: dataUser?.name
+      name:  infoUser?.name
     },
     enableReinitialize: true,
     // validationSchema: validationSchema,
@@ -182,9 +179,13 @@ const PostUser = ({ data }) => {
             helperText={formik.touched.content && formik.errors.content}
           />
           {data?.hadTimeStop &&
-            <Typography variant="body2" fontSize="medium" sx={{ padding: "4px 0", fontSize: '15px' }}>
+          <>
+          <Checkbox/>
+          <Typography variant="body2" fontSize="medium" sx={{ padding: "4px 0", fontSize: '15px' }}>
           Chúng tôi cho phép bạn giới hạn thời gian hiển thị tin. Tin quá thời hạn (tối đa 30 ngày) sẽ được tự động gỡ bỏ trên thông tin cộng đồng.
-        </Typography>}
+        </Typography>
+          </>
+            }
         </Box>
         <BootstrapButton
           color="primary"

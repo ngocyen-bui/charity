@@ -17,8 +17,9 @@ import { getPostOfUser, updateStatusPost } from "../../features/users/userAPI";
 import { useQuery } from "@tanstack/react-query";
 import {
   defaultImage,
+  ended,
   listTypeAccount,
-  listTypePost,
+  listTypePostDetails,
   showing,
   stoped,
 } from "../../common/user";
@@ -39,7 +40,7 @@ const optionsActive = [edit, active];
 
 const RenderTabPanel = ({ typePost, updateType, id }) => {
   const router = useRouter();
-  const item = listTypePost.find((e) => e.id === typePost * 1);
+  const item = listTypePostDetails.find((e) => e.id === typePost * 1);
   const initFilter = {
     page: 1,
     size: 100,
@@ -59,7 +60,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     ["posts", initFilter],
     () => getPostOfUser({ filter })
   );
-
+    const [itemClick, setItemClick] = useState()
   const [stateUpdateStatusPost, setStateUpdateStatusPost] = useState({
     state: false,
     message: "Cập nhật thành công",
@@ -74,13 +75,16 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
   const listItemPost = listDataPostFromApi?.data?.data;
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event) => {
+
+  const handleClick = (event, element) => {
     setAnchorEl(event.currentTarget);
+    setItemClick(element)
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleClickMenu = (type, id) => {
+  const handleClickMenu = (type) => {  
+    const id = itemClick;
     handleClose();
     if (type === edit.id) {
       return router.push("/user/post/" + id);
@@ -95,7 +99,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
       idMenu = showing?.id;
     }
     return updateStatusPost({ id: id, data: status })
-      .then((res) => {
+      .then(() => {
         setStateUpdateStatusPost({ ...stateUpdateStatusPost, state: true });
         return updateType(idMenu);
       })
@@ -108,7 +112,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
       });
   };
   const handleCloseMessage = () => {
-    setStateUpdateStatusPost({ state: false });
+    setStateUpdateStatusPost({ ...stateUpdateStatusPost,state: false });
   };
   if (isFetching)
     return (
@@ -164,7 +168,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                             boxShadow: "0px 4px 10px #ddd",
                           }}
                           src={
-                            linkImage(e?.creator?.images?.image) ||
+                            linkImage(e?.creator?.images?.avatar) ||
                             linkImage(defaultAvatarImage)
                           }
                         ></Avatar>
@@ -198,55 +202,14 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                           </Stack>
                         </Box>
                       </Box>
-                      <IconButton
+                      {(item?.id !== ended?.id )&& <IconButton
                         sx={{ color: "rgb(254, 146, 146)" }}
                         component="label"
                         aria-haspopup="true"
-                        onClick={handleClick}
+                        onClick={(i) => handleClick(i, e?.id)}
                       >
                         <MoreHorizIcon />
-                      </IconButton>
-                      <Menu
-                        id="long-menu"
-                        MenuListProps={{
-                          "aria-labelledby": "long-button",
-                        }}
-                        anchorEl={anchorEl}
-                        open={open}
-                        onClose={handleClose}
-                        PaperProps={{
-                          style: {
-                            maxHeight: 20 * 4.5,
-                            width: "20ch",
-                          },
-                        }}
-                      >
-                        {options.map((option) => {
-                          if (typePost === item?.id) {
-                            return (
-                              <MenuItem
-                                key={option?.id}
-                                value={option?.key}
-                                onClick={() =>
-                                  handleClickMenu(option?.id, e?.id)
-                                }
-                              >
-                                {option?.text}
-                              </MenuItem>
-                            );
-                          }
-
-                          return (
-                            <MenuItem
-                              key={option?.id}
-                              value={option?.key}
-                              onClick={() => handleClickMenu(option?.id, e?.id)}
-                            >
-                              {option?.text}
-                            </MenuItem>
-                          );
-                        })}
-                      </Menu>
+                      </IconButton>}
                     </Box>
                     <Box
                       sx={{
@@ -322,6 +285,33 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         {...stateUpdateStatusPost}
         handleCloseMessage={handleCloseMessage}
       />
+      <Menu
+        id="short-menu"
+        MenuListProps={{
+          "aria-labelledby": "long-button",
+        }}
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          style: {
+            maxHeight: 20 * 4.5,
+            width: "20ch",
+          },
+        }}
+      >
+        {options?.map((option) => {
+          return (
+            <MenuItem
+              key={option?.id}
+              value={option?.key}
+              onClick={() => handleClickMenu(option?.id)}
+            >
+              {option?.text}
+            </MenuItem>
+          );
+        })}
+      </Menu>
     </TabPanel>
   );
 };
