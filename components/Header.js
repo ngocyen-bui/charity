@@ -14,6 +14,7 @@ import { linkImage } from "../features/Image";
 import { getCookie, setCookie } from "cookies-next";
 import { useQuery } from "@tanstack/react-query";
 import { getDetailUser } from "../features/users/userAPI";
+import { useRouter } from "next/router";
 export { Header };
 const navItems = [
   {
@@ -76,6 +77,7 @@ const subNavItems = [
 ];
 
 function Header({isShowSubBar=true, isChange=false}) {
+  const router = useRouter()
   const [isNavBarActive, setIsNavBarActive] = useState(1);
   const infoUserString = getCookie('auth')
   let infoUser = infoUserString ? JSON.parse(infoUserString) : {};
@@ -164,7 +166,7 @@ function Header({isShowSubBar=true, isChange=false}) {
                       }}
                     >
                       <FavoriteBorderIcon fontSize="small" />
-                      <span> 0</span>
+                      <span> {infoUser?.totalBeingFollowed}</span>
                     </Box>
                   </Box>
                 </>

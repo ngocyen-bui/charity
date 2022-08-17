@@ -24,17 +24,9 @@ const getDetailUser = async (id) => {
         }
     }) 
 }
-const postFollowerlUser = async ({id,data}) => {
+const putFollowerlUser = async ({data}) => {
     const token = getCookie('token'); 
-    return await axiosClient.post(`follower/${id}`,{data},{
-        headers: {
-            Authorization: "Bearer " + token
-        }
-    }) 
-}
-const putFollowerlUser = async ({id,data}) => {
-    const token = getCookie('token'); 
-    return await axiosClient.post(`follower/${id}`,{data},{
+    return await axiosClient.put(`followers`,data,{
         headers: {
             Authorization: "Bearer " + token
         }
@@ -72,6 +64,14 @@ const getPostOfUser = async ({filter}) => {
         }
     }) 
 }
+const getFollowerOfUser = async ({filter}) => {
+    const token = getCookie('token'); 
+    return await axiosClient.get(`followers${filter}`,{
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    }) 
+}
 
 export {
     loginAccount,
@@ -80,7 +80,7 @@ export {
     updateDetailUser,
     updateNewPassword,
     getPostOfUser,
-    postFollowerlUser,
     putFollowerlUser,
-    updateStatusPost
+    updateStatusPost,
+    getFollowerOfUser
 }

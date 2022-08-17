@@ -40,7 +40,7 @@ import {
 } from "../../common/user";
 import { useState } from "react";
 import Link from "next/link";
-import { getDetailUser, getFlowerlUser, updateDetailUser } from "../../features/users/userAPI";
+import { getDetailUser, getFlowerlUser, postFollowerlUser, putFollowerlUser, updateDetailUser } from "../../features/users/userAPI";
 import { linkImage, upload } from "../../features/Image";
 import { deleteCookie, getCookie } from "cookies-next";
 import { RenderFormChangePassword, RenderTabPanel } from "../../components";
@@ -69,9 +69,15 @@ export default function DetailUser() {
   const mutation = useMutation(updateDetailUser, {
     onSuccess: () => {
       setIsChangeAvatar(true)
-      queryClient.invalidateQueries("user");
+      queryClient.invalidateQueries(["user",id]);
     },
   });
+
+  const mutationPutFollower = useMutation(putFollowerlUser,{
+    onSuccess: (value) => {
+      queryClient.setQueryData(["user",id], value);
+    },
+  })
   const listData = infoUser?.data?.data;
   const isFollower = !!listData?.nowBeingFollowed?.find(e => e.id * 1 === auth?.id * 1);
   const typeAccount = listTypeAccount.find(e => e.type === listData?.type);
@@ -98,6 +104,9 @@ export default function DetailUser() {
   };
   const handleChangeType = (e) => {
     setType(e);
+    router.replace({
+      query: {id: id}
+    })
   };
   const handleChangeTypePost = (newValue) => {
     setTypePost(newValue);
@@ -149,11 +158,27 @@ export default function DetailUser() {
     setStateUploadImages({ ...stateUploadImages, open: false });
   };
   const handleFollower = (val) => {
-    console.log(val)
     if (auth?.id * 1 === id * 1) {
       return;
     }
-    // getFlowerlUser()
+    let data ={
+      targetMemberId: id*1,
+      message: "-",
+      type: 1
+    }
+    if(val){
+      data={
+        ...data,
+        status: -1
+      }
+      mutationPutFollower.mutate({data}) 
+    }else{
+      data={
+        ...data,
+        status: 1,
+      }
+      mutationPutFollower.mutate({data}) 
+    }
 
   } 
   return (
@@ -279,7 +304,7 @@ export default function DetailUser() {
                   onClick={() =>handleFollower(false)} />}
 
 
-              <Link href={`/follower/${id}`}>
+              <Link href={{pathname:`/follower/${id}`, query: {name: listData?.name}}}>
                 <Typography sx={{ fontSize: '16px', cursor: 'pointer' }}>{listData?.totalBeingFollowed}</Typography>
               </Link>
             </Box>

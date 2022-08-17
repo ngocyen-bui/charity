@@ -15,11 +15,17 @@ import {
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { getPostOfUser, updateStatusPost } from "../../features/users/userAPI";
 import { useQuery } from "@tanstack/react-query";
-import { defaultImage, listTypeAccount, listTypePost, showing, stoped } from "../../common/user";
+import {
+  defaultImage,
+  listTypeAccount,
+  listTypePost,
+  showing,
+  stoped,
+} from "../../common/user";
 import { linkImage } from "../../features/Image";
 import Image from "next/image";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 import { Message } from "../Message";
@@ -40,10 +46,15 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     creatorId: id,
     isAvailable: item?.isAvailable,
     status: item?.status,
-  };
+  }; 
   const filter =
     "?" +
     new URLSearchParams(JSON.parse(JSON.stringify(initFilter))).toString();
+  useEffect(() => {
+      router.replace({
+        query: { ...JSON.parse(JSON.stringify(initFilter)), id: id },
+    });
+  }, [typePost]);
   const { data: listDataPostFromApi, isFetching } = useQuery(
     ["posts", initFilter],
     () => getPostOfUser({ filter })
@@ -53,7 +64,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     state: false,
     message: "Cập nhật thành công",
     type: "success",
-    time: 1000
+    time: 1000,
   });
 
   let options = optionsStop;
@@ -78,15 +89,15 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     let idMenu = 0;
     if (type === stop?.id) {
       status = { status: stoped?.status };
-      idMenu = stoped?.id
+      idMenu = stoped?.id;
     } else if (type === active?.id) {
       status = { status: showing?.status };
-      idMenu = showing?.id
+      idMenu = showing?.id;
     }
     return updateStatusPost({ id: id, data: status })
       .then((res) => {
         setStateUpdateStatusPost({ ...stateUpdateStatusPost, state: true });
-       return updateType(idMenu);
+        return updateType(idMenu);
       })
       .catch((err) => {
         return setStateUpdateStatusPost({
@@ -96,9 +107,9 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         });
       });
   };
-  const handleCloseMessage = ()=>{
-    setStateUpdateStatusPost({...stateUpdateStatusPost, state: false})
-  }
+  const handleCloseMessage = () => {
+    setStateUpdateStatusPost({ state: false });
+  };
   if (isFetching)
     return (
       <Box sx={{ alignItems: "center" }}>
@@ -113,7 +124,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
           Loading...
         </Typography>
       </Box>
-    ); 
+    );
   return (
     <TabPanel value={typePost} index={typePost}>
       <Box
@@ -127,7 +138,9 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         {listItemPost?.length > 0 ? (
           <Grid container spacing={1}>
             {listItemPost?.map((e) => {
-              const typeAccount = listTypeAccount.find(t => t.type*1 === e?.creator?.type*1);
+              const typeAccount = listTypeAccount.find(
+                (t) => t.type * 1 === e?.creator?.type * 1
+              );
               return (
                 <Grid item xs={6} key={e?.id}>
                   <Paper
@@ -175,7 +188,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                             <Chip
                               size="small"
                               label={typeAccount?.text}
-                              sx={{background: typeAccount?.color}}
+                              sx={{ background: typeAccount?.color }}
                             />
                             <Chip
                               size="small"
@@ -246,7 +259,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                         width="340px"
                         height="260px"
                         objectFit="cover"
-                        style={{ borderRadius: "10px"}}
+                        style={{ borderRadius: "10px" }}
                         alt="Image"
                       />
                     </Box>
@@ -305,7 +318,10 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         </Button>
       </Box>
 
-      <Message {...stateUpdateStatusPost} handleCloseMessage={handleCloseMessage}  />
+      <Message
+        {...stateUpdateStatusPost}
+        handleCloseMessage={handleCloseMessage}
+      />
     </TabPanel>
   );
 };

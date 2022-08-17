@@ -143,14 +143,14 @@ const persional = {
  color: 'rgb(101, 255, 185)'
 }
 
-const organization ={
+const  sponsor ={
   id: 3,
   key: '3',
   text: 'Mạnh thường quân',
   type: 3,
   color: 'orange'
 }
-const sponsor = {
+const organization = {
   id: 2,
   key: '2',
   text: 'Tổ chức',

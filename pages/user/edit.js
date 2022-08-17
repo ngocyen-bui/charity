@@ -10,11 +10,43 @@ import { useEffect, useState } from "react";
 import { Footer } from "../../components";
 import { getDetailUser, updateDetailUser } from "../../features/users/userAPI";
 import { getCookie } from "cookies-next";
-import { gender } from "../../common/user";
+import { gender, listTypeAccount, organization, persional, sponsor } from "../../common/user";
 import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { Message } from "../../components/Message";
 
 
-const validationSchema = yup.object({
+const urlRegex = '^(?!mailto:)(?:(?:http|https|ftp)://)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(/|\\?|#)[^\\s]*)?$';
+export default function EditUser() {
+  const [listData,setListData] = useState({});
+  const infoUser = getCookie('auth')? JSON.parse(getCookie('auth')): {};
+  const { data: infoUsers } = useQuery(["user", infoUser?.id],() => getDetailUser(infoUser?.id), {
+    enabled: Boolean(infoUser?.id),
+  });
+  const typeAccount = listTypeAccount?.find(e => e.type === infoUser?.type);
+
+  const isOrganization = typeAccount?.type === organization?.type;
+  const isSponsor = typeAccount?.type === sponsor?.type;
+  const isPersional = typeAccount?.type === persional?.type;
+
+  
+  const [message, setMessage] = useState({
+    message: 'Cập nhật thông tin thành công! ',
+    type: 'success',
+    time: 2000,
+    state: false
+  })
+  useEffect(()=>{
+    setListData(infoUsers?.data?.data);
+  },[infoUsers])
+  const mutation = useMutation(updateDetailUser, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('user');
+    },
+  });
+  const handleCloseMessage = ()=>{
+    setMessage({...message,state: false})
+  }
+  let initField = {
     email: yup
     .string("Email là bắt buộc")
     .email('Vui lòng nhập email hợp lệ')
@@ -26,24 +58,33 @@ const validationSchema = yup.object({
     .string("Enter your password")
     .max(250, "Độ dài tối đa là 250 ký tự"),
     name: yup
+    .string(),
+    facebook: yup
+    .string('Link facebook')
+    .matches(urlRegex, {
+      message: "Link không đúng định dạng",
+      excludeEmptyString: false,
+    }),
+    website: yup
+    .string('Link website')
+    .matches(urlRegex, {
+      message: "Link không đúng định dạng",
+      excludeEmptyString: false,
+    })
+}
+  const fieldOrganiztion = {
+    representName: yup
     .string()
-});
+    .required("Tên người đại diện là bắt buộc"),
+    totalMembers: yup.string()
+    .required("Số lượng thành viên là bắt buộc")
+  }
+  if(isOrganization){
+    initField = {...initField, ...fieldOrganiztion}
+  }
+  const validationSchema = yup.object({...initField});
 
-export default function EditUser() {
-    const [listData,setListData] = useState({});
-  const infoUser = getCookie('auth')? JSON.parse(getCookie('auth')): {};
-  const { data: infoUsers } = useQuery(["user", infoUser?.id],() => getDetailUser(infoUser?.id), {
-    enabled: Boolean(infoUser?.id),
-  });
-  useEffect(()=>{
-    setListData(infoUsers?.data?.data);
-  },[infoUsers])
-  const mutation = useMutation(updateDetailUser, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('user');
-    },
-  });
-
+   
   const formik = useFormik({
     initialValues: {
       name: listData?.name || "",
@@ -53,7 +94,9 @@ export default function EditUser() {
       website: listData?.websites?.website || "",
       description: listData?.description||"",
       birthday: listData?.birthday|| "",
-      gender: listData?.gender || "",
+      gender: listData?.gender || '',
+      representName: listData?.representName || undefined,
+      totalMembers: listData?.totalMembers || undefined
     },
     enableReinitialize: true,
     validationSchema: validationSchema,
@@ -67,8 +110,10 @@ export default function EditUser() {
         facebook: undefined,
         website: undefined,
       };
-      mutation.mutate({ data: data });
+      mutation.mutate({ data: JSON.parse(JSON.stringify(data)) });
+      setMessage({...message,state: true})
     },
+    
   });
 
   if(infoUser?.id && listData) return (
@@ -79,6 +124,7 @@ export default function EditUser() {
           <Typography variant="h6">Cập nhật thông tin</Typography>
           <Box sx={{ marginTop: "24px" }}>
             <form onSubmit={formik.handleSubmit}>
+              {(isPersional || isSponsor) && 
               <CssTextField
                 fullWidth
                 id="name"
@@ -91,7 +137,47 @@ export default function EditUser() {
                 onChange={formik.handleChange}
                 error={formik.touched.name && Boolean(formik.errors.name)}
                 helperText={formik.touched.name && formik.errors.name}
+              />}
+              {isOrganization && <>
+                <CssTextField
+                fullWidth
+                id="name"
+                name="name"
+                label="Tên tô chức *"
+                variant="outlined"
+                size="small"
+                value={formik.values.name}
+                disabled
+                onChange={formik.handleChange}
+                error={formik.touched.name && Boolean(formik.errors.name)}
+                helperText={formik.touched.name && formik.errors.name}
               />
+              <CssTextField
+                fullWidth
+                id="representName"
+                name="representName"
+                label="Người đại diện *"
+                variant="outlined"
+                size="small"
+                value={formik.values.representName}
+                onChange={formik.handleChange}
+                error={formik.touched.representName && Boolean(formik.errors.representName)}
+                helperText={formik.touched.representName && formik.errors.representName}
+              />
+              <CssTextField
+                fullWidth
+                id="totalMembers"
+                name="totalMembers"
+                label="Số lượng thành viên *"
+                variant="outlined"
+                size="small"
+                type="number"
+                value={formik.values.totalMembers}
+                onChange={formik.handleChange}
+                error={formik.touched.totalMembers && Boolean(formik.errors.totalMembers)}
+                helperText={formik.touched.totalMembers && formik.errors.totalMembers}
+              />
+              </>}
               <CssTextField
                 fullWidth
                 id="description"
@@ -181,38 +267,39 @@ export default function EditUser() {
                 error={formik.touched.website && Boolean(formik.errors.website)}
                 helperText={formik.touched.website && formik.errors.website}
               />
+              {(isPersional || isSponsor) && 
               <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DesktopDatePicker
-                      id="birthday"
-                      name="birthday"
-                      label="Ngày sinh"
-                      inputFormat="MM/dd/yyyy"
-                      value={formik.values.birthday}
-                      onChange={(value) => {
-                        formik.setFieldValue("birthday", Date.parse(value));
-                      }}
-                      renderInput={(params) => {
-                        return (
-                          <CssTextField fullWidth  size="small" {...params} />
-                        )
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-                <Grid item xs={6}>
-                  <CustomSelect
-                    id="gender"
-                    name="gender"
-                    label="Giới tính"
-                    type='gender'
-                    formik={formik}
-                    data={gender}
-                    SelectProps={{ multiple: false }}
+              <Grid item xs={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DesktopDatePicker
+                    id="birthday"
+                    name="birthday"
+                    label="Ngày sinh"
+                    inputFormat="MM/dd/yyyy"
+                    value={formik.values.birthday}
+                    onChange={(value) => {
+                      formik.setFieldValue("birthday", Date.parse(value));
+                    }}
+                    renderInput={(params) => {
+                      return (
+                        <CssTextField fullWidth  size="small" {...params} />
+                      )
+                    }}
                   />
-                </Grid>
+                </LocalizationProvider>
               </Grid>
+              <Grid item xs={6}>
+                <CustomSelect
+                  id="gender"
+                  name="gender"
+                  label="Giới tính"
+                  type='gender'
+                  formik={formik}
+                  data={gender}
+                  SelectProps={{ multiple: false }}
+                />
+              </Grid>
+            </Grid>}
               <BootstrapButton
                 sx={{ backgroundColor: "#f19e9e" }}
                 variant="contained"
@@ -225,6 +312,7 @@ export default function EditUser() {
           </Box>
         </Box>
       </Container>
+      <Message {...message  } handleCloseMessage={handleCloseMessage}></Message>
       <Footer />
     </>
   ); 
