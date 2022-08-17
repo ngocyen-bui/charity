@@ -15,7 +15,7 @@ import {
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { getPostOfUser, updateStatusPost } from "../../features/users/userAPI";
 import { useQuery } from "@tanstack/react-query";
-import { listTypePost, showing, stoped } from "../../common/user";
+import { defaultImage, listTypeAccount, listTypePost, showing, stoped } from "../../common/user";
 import { linkImage } from "../../features/Image";
 import Image from "next/image";
 import moment from "moment";
@@ -53,6 +53,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     state: false,
     message: "Cập nhật thành công",
     type: "success",
+    time: 1000
   });
 
   let options = optionsStop;
@@ -60,7 +61,6 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
     options = optionsActive;
   }
   const listItemPost = listDataPostFromApi?.data?.data;
-
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -75,15 +75,18 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
       return router.push("/user/post/" + id);
     }
     let status = {};
+    let idMenu = 0;
     if (type === stop?.id) {
       status = { status: stoped?.status };
+      idMenu = stoped?.id
     } else if (type === active?.id) {
       status = { status: showing?.status };
+      idMenu = showing?.id
     }
     return updateStatusPost({ id: id, data: status })
       .then((res) => {
         setStateUpdateStatusPost({ ...stateUpdateStatusPost, state: true });
-        updateType(status?.status);
+       return updateType(idMenu);
       })
       .catch((err) => {
         return setStateUpdateStatusPost({
@@ -110,7 +113,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
           Loading...
         </Typography>
       </Box>
-    );
+    ); 
   return (
     <TabPanel value={typePost} index={typePost}>
       <Box
@@ -124,6 +127,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         {listItemPost?.length > 0 ? (
           <Grid container spacing={1}>
             {listItemPost?.map((e) => {
+              const typeAccount = listTypeAccount.find(t => t.type*1 === e?.creator?.type*1);
               return (
                 <Grid item xs={6} key={e?.id}>
                   <Paper
@@ -170,8 +174,8 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                           <Stack direction="row" spacing={1}>
                             <Chip
                               size="small"
-                              label="Cá nhân"
-                              color="primary"
+                              label={typeAccount?.text}
+                              sx={{background: typeAccount?.color}}
                             />
                             <Chip
                               size="small"
@@ -238,10 +242,11 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                       }}
                     >
                       <Image
-                        src={linkImage(e?.images?.image)}
+                        src={linkImage(e?.images?.image || defaultImage)}
                         width="340px"
                         height="260px"
-                        style={{ borderRadius: "10px" }}
+                        objectFit="cover"
+                        style={{ borderRadius: "10px"}}
                         alt="Image"
                       />
                     </Box>

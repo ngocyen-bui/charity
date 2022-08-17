@@ -7,6 +7,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ArticleIcon from "@mui/icons-material/Article";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import PinDropIcon from "@mui/icons-material/PinDrop";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import EmailIcon from "@mui/icons-material/Email";
 import LanguageIcon from "@mui/icons-material/Language";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
@@ -35,18 +36,21 @@ import {
   listSetting,
   listType,
   listTypePost,
+  listTypeAccount
 } from "../../common/user";
 import { useState } from "react";
 import Link from "next/link";
-import { getDetailUser, updateDetailUser, updateNewPassword } from "../../features/users/userAPI";
+import { getDetailUser, getFlowerlUser, updateDetailUser } from "../../features/users/userAPI";
 import { linkImage, upload } from "../../features/Image";
-import { deleteCookie, setCookie } from "cookies-next"; 
+import { deleteCookie, getCookie } from "cookies-next";
 import { RenderFormChangePassword, RenderTabPanel } from "../../components";
 
 
 export default function DetailUser() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const authString = getCookie('auth');
+  const auth = authString && JSON.parse(authString);
   const { id } = router.query;
   const [anchorEl, setAnchorEl] = useState(null);
   const [type, setType] = useState(1);
@@ -68,8 +72,10 @@ export default function DetailUser() {
       queryClient.invalidateQueries("user");
     },
   });
-
   const listData = infoUser?.data?.data;
+  const isFollower = !!listData?.nowBeingFollowed?.find(e => e.id * 1 === auth?.id * 1);
+  const typeAccount = listTypeAccount.find(e => e.type === listData?.type);
+  const isAuth = auth?.id * 1 === id * 1; 
   const unknown = () => {
     return <span className="text-grey">Chưa cập nhật</span>;
   };
@@ -93,7 +99,7 @@ export default function DetailUser() {
   const handleChangeType = (e) => {
     setType(e);
   };
-  const handleChangeTypePost = ( newValue) => {
+  const handleChangeTypePost = (newValue) => {
     setTypePost(newValue);
   };
   const handleLogOut = () => {
@@ -106,7 +112,7 @@ export default function DetailUser() {
   const handleUploadCoverImage = (event) => {
     let file = event.target.files[0];
     upload(file).then((res) => {
-      setStateUploadImages({ text: "Cập nhật ảnh bìa thành công", open: true , type: 'success'});
+      setStateUploadImages({ text: "Cập nhật ảnh bìa thành công", open: true, type: 'success' });
       let data = {
         images: {
           avatar: listData?.images?.avatar || undefined,
@@ -119,7 +125,7 @@ export default function DetailUser() {
   };
   const handleUploadAvatar = (event) => {
     let file = event.target.files[0];
-    upload(file).then((res) => { 
+    upload(file).then((res) => {
       setStateUploadImages({
         text: "Cập nhật ảnh đại diện thành công",
         open: true,
@@ -133,7 +139,7 @@ export default function DetailUser() {
         },
       };
       return mutation.mutate({ data: data });
-    }).catch(err =>  setStateUploadImages({
+    }).catch(err => setStateUploadImages({
       text: "Cập nhật ảnh đại diện thất bại",
       open: true,
       type: 'error'
@@ -142,7 +148,14 @@ export default function DetailUser() {
   const handleCloseMessage = () => {
     setStateUploadImages({ ...stateUploadImages, open: false });
   };
- 
+  const handleFollower = (val) => {
+    console.log(val)
+    if (auth?.id * 1 === id * 1) {
+      return;
+    }
+    // getFlowerlUser()
+
+  } 
   return (
     <>
       <Header isShowSubBar={false} isChange={isChangeAvatar} />
@@ -214,7 +227,7 @@ export default function DetailUser() {
                     ? linkImage(listData?.images?.avatar)
                     : linkImage(defaultAvatarImage)
                 }
-              /> 
+              />
               <Box sx={{ position: "absolute", bottom: "0", right: "0" }}>
                 <IconButton
                   sx={{ fontSize: "20px", padding: "0" }}
@@ -244,29 +257,38 @@ export default function DetailUser() {
             </Box>
             <Typography
               sx={{
-                backgroundColor: "rgb(101, 255, 185) ",
+                backgroundColor: typeAccount?.color,
                 fontSize: "14px",
                 borderRadius: "10px",
                 padding: "0 8px",
               }}
             >
-              Cá nhân
+              {typeAccount?.text}
             </Typography>
           </Box>
 
           <Typography className="name">{listData?.name}</Typography>
           <Box className="wrapper-info-header">
             <Box className="follower">
-              <FavoriteBorderIcon
-                sx={{ color: "#f19e9e", marginRight: "8px" }}
-              />
-              <Typography>{listData?.totalBeingFollowed}</Typography>
+              {isFollower ?
+              // {Không thể follow chính bản thân mình => chỉnh cursor về mặt định}
+                <FavoriteIcon sx={{ color: "#f19e9e", marginRight: "8px", cursor: !isAuth && "pointer" }}
+                  onClick={() =>handleFollower(true)} /> :
+                <FavoriteBorderIcon
+                  sx={{ color: "#f19e9e", marginRight: "8px", cursor: !isAuth && "pointer" }}
+                  onClick={() =>handleFollower(false)} />}
+
+
+              <Link href={`/follower/${id}`}>
+                <Typography sx={{ fontSize: '16px', cursor: 'pointer' }}>{listData?.totalBeingFollowed}</Typography>
+              </Link>
             </Box>
             <Box className="setting">
-              <SettingsIcon
+              {isAuth ? <SettingsIcon
                 sx={{ color: "#f19e9e", cursor: "pointer" }}
                 onClick={handleClick}
-              />
+              />: <Box sx={{height: '30px'}}></Box> }
+              
               <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -327,10 +349,10 @@ export default function DetailUser() {
                 sx={
                   type === e.id
                     ? {
-                        backgroundColor: "#f19e9e",
-                        marginRight: "12px",
-                        "&:hover": { backgroundColor: "#ef5d5d" },
-                      }
+                      backgroundColor: "#f19e9e",
+                      marginRight: "12px",
+                      "&:hover": { backgroundColor: "#ef5d5d" },
+                    }
                     : { marginRight: "12px", color: "#f19e9e" }
                 }
               >
@@ -394,7 +416,7 @@ export default function DetailUser() {
               <Box sx={{ borderBottom: 1, borderColor: "#ddd" }}>
                 <Tabs
                   value={typePost}
-                  onChange={(e,i)=>handleChangeTypePost(i)}
+                  onChange={(e, i) => handleChangeTypePost(i)}
                   aria-label="basic tabs example"
                 >
                   {listTypePost?.map((e) => {
@@ -409,7 +431,7 @@ export default function DetailUser() {
                   })}
                 </Tabs>
               </Box>
-              <RenderTabPanel typePost={typePost} updateType={handleChangeTypePost} id={id}/>
+              <RenderTabPanel typePost={typePost} updateType={handleChangeTypePost} id={id} />
             </Box>
           ) : null}
         </Box>
