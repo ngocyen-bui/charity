@@ -4,82 +4,140 @@ import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined
 import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
 import HouseOutlinedIcon from "@mui/icons-material/HouseOutlined";
 import LocalGroceryStoreOutlinedIcon from "@mui/icons-material/LocalGroceryStoreOutlined";
+import { carrier, formSupport, infoExperiance, infoGender, infoLevelOfEducation, kindJob, kindOfAccommodation, kindPaySalary, kindProduct, kindTransport, listSupport } from "./optionPost";
 
 const homepage  = {
     id: 2,
     type: 1,
-    text: "Tặng người khác",
+    text: "Trang chủ",
+    fieldExtra: []
 }
 
 const persionalPage = {
+    categoryId: 16,
     id: 6,
     type: 2,
     text: "Trang cá nhân",
+    fieldExtra: []
 }
 
-const needHelp ={
+const needHelp = {
+    categoryId: 4,
     id: 5,
     type: 4,
     text: "Cần giúp đỡ",
+    fieldExtra: [ 
+        listSupport,
+    ]
 }
 
 const giveSomeoneElse = {
+    categoryId: 4,
     id: 6,
     type: 3,
     text: "Tặng người khác",
-    hadTimeStop: true,
+    fieldExtra: [ 
+        listSupport,
+        formSupport,
+    ]
 }
 
 const findCarrier = {
+    categoryId: 12,
     id: 8,
     type: 4,
     text: "Tìm người vận chuyển",
+    fieldExtra: [ 
+        kindTransport,
+        kindProduct,
+    ]
 }
 const getShipping = {
+    categoryId: 12,
     id: 9,
     type: 3,
     text: "Nhận vận chuyển",
-    hadTimeStop: true,
+    fieldExtra: [ 
+        kindTransport,
+        kindProduct,
+    ]
 }
 const findJob = {
+    categoryId: 25,
     id: 11,
     type: 4,
     text: "Cần tìm việc",
+    fieldExtra: [ 
+        carrier,
+        kindJob,
+        kindPaySalary,
+    ], 
+    moreInfomation: [
+        infoGender, 
+        infoExperiance,
+        infoLevelOfEducation
+    ]
 }
 
 const recruit = {
+    categoryId: 25,
     id: 7,
     type: 3,
     text: "Tuyển dụng",
-    hadTimeStop: true,
+    fieldExtra: [ 
+        carrier,
+        kindJob,
+        kindPaySalary,
+    ], 
+    moreInfomation: [
+        infoGender, 
+        infoExperiance,
+        infoLevelOfEducation
+    ]
 }
 
 const findPlace = {
+    categoryId: 35,
     id: 14,
     type: 4,
     text: "Tìm chỗ ở",
+    fieldExtra: [ 
+        kindOfAccommodation
+    ]
+    
 }
 
 
 const supportPlace = {
+    categoryId: 35,
     id: 15,
     type: 3,
-    text: "Hỗ trọ chỗ ở",
-    hadTimeStop: true,
+    text: "Hỗ trợ chỗ ở",
+    fieldExtra: [ 
+        kindOfAccommodation
+    ]
 }
 
 const findSupplier  = {
+    categoryId: 3,
     id: 17,
     type: 4,
     text: "Tìm nhà cung cấp",
+    fieldExtra: [ 
+        listSupport,
+    ]
 }
 
 const supportSupplier = {
+    categoryId: 3,
     id: 18,
     type: 3,
     text: "Nhà cung cấp",
-    hadTimeStop: true,
+    fieldExtra: [ 
+        listSupport,
+    ]
 }
+
 
 const listExtraPost = [
     homepage,
@@ -137,7 +195,7 @@ const job = {
     children: [
         findJob,
         recruit,
-    ]
+    ],
 }
 
 const place = {

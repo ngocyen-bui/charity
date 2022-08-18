@@ -9,118 +9,13 @@ import HouseOutlinedIcon from "@mui/icons-material/HouseOutlined";
 import LocalGroceryStoreOutlinedIcon from "@mui/icons-material/LocalGroceryStoreOutlined";
 import { useState } from "react";
 import { Footer, PostUser } from "../../components";
-import { getCookie } from "../../utils";
 import { listTypePost } from "../../common/post";
-// const listTypePost = [
-//   {
-//     id: 1,
-//     text: "Bảng tin",
-//     icon: (props) => <HomeOutlinedIcon {...props} />,
-//     extraText: "Loại tin",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Trang cá nhân",
-//       },
-//     ],
-//     hadTimeStop: true,
-//   },
-//   {
-//     id: 2,
-//     text: "Cho tặng",
-//     icon: (props) => <CardGiftcardOutlinedIcon {...props} />,
-//     extraText: "Nhận khi bạn cần, cho khi bạn có",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Cần giúp đỡ",
-//       },
-//       {
-//         id: 2,
-//         text: "Tặng người khác",
-//         hadTimeStop: true,
-//       },
-//     ],
-//   },
-//   {
-//     id: 3,
-//     text: "Vận chuyển",
-//     icon: (props) => <LocalShippingOutlinedIcon {...props} />,
-//     extraText: "",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Tìm người vận chuyển",
-//       },
-//       {
-//         id: 2,
-//         text: "Nhận vận chuyển",
-//         hadTimeStop: true,
-//       },
-//     ],
-//   },
-//   {
-//     id: 4,
-//     text: "Công việc",
-//     icon: (props) => <BusinessCenterOutlinedIcon {...props} />,
-//     extraText: "",
-//     extraText: "",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Cần tìm việc",
-//       },
-//       {
-//         id: 2,
-//         text: "Tuyển dụng",
-//         hadTimeStop: true,
-//       },
-//     ],
-//   },
-//   {
-//     id: 5,
-//     text: "Chỗ ở",
-//     icon: (props) => <HouseOutlinedIcon {...props} />,
-//     extraText: "",
-//     extraText: "",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Tìm chỗ ở",
-//       },
-//       {
-//         id: 2,
-//         text: "Hỗ trọ chỗ ở",
-//         hadTimeStop: true,
-//       },
-//     ],
-//   },
-//   {
-//     id: 6,
-//     text: "Chợ yêu thương",
-//     icon: (props) => <LocalGroceryStoreOutlinedIcon {...props} />,
-//     extraText: "",
-//     extraText: "",
-//     children: [
-//       {
-//         id: 1,
-//         text: "Tìm nhà cung cấp",
-//       },
-//       {
-//         id: 2,
-//         text: "Nhà cung cấp",
-//         hadTimeStop: true,
-//       },
-//     ],
-//   },
-// ];
+import { getCookie } from "cookies-next";
 
 export default function Post() {
   const [type, setType] = useState();
   const [extraType, setExtraType] = useState();
-  const infoUserString =
-    getCookie(typeof document !== "undefined" ? document.cookie : "", "auth") ||
-    "";
+  const infoUserString = getCookie("auth");
   const handleClickDetailListPost = () => {
   };
   const handleChooseTypePost = (e) => {

@@ -19,62 +19,6 @@ const gender = [
     text: 'Nữ'
   }
 ]
-const transportProductType = [
-  {
-    id: 1,
-    key: '1',
-    vnText: 'Xe máy',
-    enText: 'Motorbike'
-  },
-  {
-    id: 2,
-    key: '2',
-    vnText: 'Xe oto',
-    enText: 'Car'
-  },
-  {
-    id: 3,
-    key: '3',
-    vnText: 'Xe ba gác',
-    enText: 'Cargo tricycle'
-  },
-  {
-    id: 4,
-    key: '4',
-    vnText: 'Xe VAN 500kg',
-    enText: '500kg Van'
-  },
-  {
-    id: 5,
-    key: '5',
-    vnText: 'Xe VAN 1000kg',
-    enText: '1000kg Van '
-  },
-  {
-    id: 6,
-    key: '6',
-    vnText: 'Xe tải 500kg',
-    enText: '500kg Truck'
-  },
-  {
-    id: 7,
-    key: '7',
-    vnText: 'Xe tải 1000kg',
-    enText: '1000kg Truck'
-  },
-  {
-    id: 8,
-    key: '8',
-    vnText: 'Xe tải 2000kg',
-    enText: '2000kg Truck'
-  },
-  {
-    id: 9,
-    key: '9',
-    vnText: 'Khác',
-    enText: 'Other'
-  }
-]
 
 const listSetting = [
   {
@@ -167,7 +111,6 @@ export {
   defaultImage,
   defaultAvatarImage,
   gender,
-  transportProductType,
   listSetting,
   listType,
   listTypePostDetails,
