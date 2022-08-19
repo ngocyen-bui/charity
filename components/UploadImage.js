@@ -13,9 +13,8 @@ import PropTypes from 'prop-types';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 export { UploadImage };
-const UploadImage = () => {
+const UploadImage = ({src,setSrc}) => {
 
-  const [src, setSrc] = useState()
   const [openModal,setOpenModal] = useState(false)
   const [actionImage, setActionImage] = useState(false);
   const [state, setState] = React.useState({

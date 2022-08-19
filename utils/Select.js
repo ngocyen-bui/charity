@@ -33,7 +33,8 @@ const CustomSelect = ({ data, formik, type, label, ...rest }) => {
               <Typography  variant="h6" fontSize={'medium'}>{label}</Typography>
           </MenuItem>
         {data?.map((e,i) => { 
-          const value = typeof(e?.text) !== 'string'?`${e?.text?.vn } / ${e?.text?.en}`: e?.key;
+          const enText = e?.text?.en ? ` / ${e?.text?.en}` : '';
+          const value = typeof(e?.text) !== 'string'?`${e?.text?.vn } ${enText}`  : e?.key;
           return (
             <MenuItem key={e?.key||i} value={value || e} sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}> 
               <Typography  variant="h6" fontSize={'medium'}>{e?.text?.vn || e?.text}</Typography>

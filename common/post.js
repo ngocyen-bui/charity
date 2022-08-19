@@ -7,6 +7,7 @@ import LocalGroceryStoreOutlinedIcon from "@mui/icons-material/LocalGroceryStore
 import { carrier, formSupport, infoExperiance, infoGender, infoLevelOfEducation, kindJob, kindOfAccommodation, kindPaySalary, kindProduct, kindTransport, listSupport } from "./optionPost";
 
 const homepage  = {
+    categoryId: 1,
     id: 2,
     type: 1,
     text: "Trang chủ",
@@ -14,7 +15,8 @@ const homepage  = {
 }
 
 const persionalPage = {
-    categoryId: 16,
+    // categoryId: 16,
+    categoryId: 1,
     id: 6,
     type: 2,
     text: "Trang cá nhân",

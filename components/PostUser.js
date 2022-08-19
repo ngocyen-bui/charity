@@ -3,7 +3,6 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
-  MenuItem,
   Typography,
 } from "@mui/material";
 import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -11,31 +10,29 @@ import { useQuery } from "@tanstack/react-query";
 import { getCookie } from "cookies-next";
 import { useFormik } from "formik";
 import { useState } from "react";
-import * as yup from "yup"; 
+import * as yup from "yup";
 import { getDetailUser } from "../features/users/userAPI";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { BootstrapButton, CssTextField, CustomSelect } from "../utils";
 import { UploadImage } from "./UploadImage";
 import { Accommodation } from "./Accommondation";
+import { Message } from "./Message";
+import moment from "moment";
 
 export { PostUser };
 
 const required = <span style={{ color: "red" }}>*</span>;
+const phoneRegExp =
+  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
-const validationSchema = yup.object({
-  title: yup
-    .string()
-    .max(256, "Tiêu đề  quá giới hạn 256 ký tự")
-    .required("Tiêu đề là bắt buôc."),
-  content: yup.string().required("Nội dung là bắt buôc."),
-  address: yup 
-   .string()
-});
 
-const PostUser = ({ data }) => { 
+const PostUser = ({ data }) => {
   const [isGetInfo, setIsGetInfo] = useState(false);
   const [hadTimeClose, setHadTimeClose] = useState(false);
-  const [accommodation, setAccommodation] = useState(false)
+  const [accommodation, setAccommodation] = useState(false);
+  const [resultAccommodation, setResultAccommodation] = useState({});
+  const [srcImage, setSrcImage] = useState()
+  const [message, setMessage] = useState({ state: false, message: 'Đăng bài thành công', type: 'success', time: 2000 });
   const infoUser = getCookie("auth") ? JSON.parse(getCookie("auth")) : {};
   const { data: infoUsers } = useQuery(
     ["user", infoUser?.id],
@@ -44,29 +41,88 @@ const PostUser = ({ data }) => {
       enabled: isGetInfo,
     }
   );
-  const handleCloseAccommodation = ()=>{
+  const handleCloseAccommodation = () => {
     setAccommodation(false)
   }
   const listInfo = infoUsers?.data?.data;
-  const handleCheckInfo = (val) => {
-    setIsGetInfo(val?.target?.checked);
-  };
+
   const handleHadTimeClosed = (val) => {
     setHadTimeClose(val?.target?.checked);
   };
-  const handleFocusAccommodation = ()=>{
+  const handleFocusAccommodation = () => {
     setAccommodation(true)
   }
+  const handleResultAccommodation = (listResult) => {
+    let text = [];
+    for (let x in listResult) {
+      text.push(listResult[x]?.name || listResult[x])
+    }
+    setResultAccommodation(listResult)
+    formik.setFieldValue("address", text.join(', '));
+  }
+  const initValidate = {
+    title: yup
+      .string()
+      .max(256, "Tiêu đề quá giới hạn 256 ký tự")
+      .required("Tiêu đề là bắt buôc."),
+    content: yup
+      .string()
+      .required("Nội dung là bắt buôc."),
+    phone: yup
+    .string()
+    .matches(phoneRegExp, {
+      message: "Số điện thoại không đúng định dạng",
+      excludeEmptyString: false,
+    })
+    .required("Số điện thoại là bắt buộc"),
+    addressLocation: yup 
+    .string()
+    .required("Địa chỉ là bắt buộc."),
+    email: yup
+    .string()
+    .email('Email không đúng định dạng')
+  
+  }
+  const place = {
+    placeType: yup
+    .array()
+    .min(1, 'Loại chỗ ở là bắt buộc.'),
+    area: yup
+    .number()
+    .min(0, 'Diện tích không được âm').
+    required('Diện tích là bắt buộc'),
+    address: yup
+      .string()
+      .required("Khu vực chỗ ở là bắt buôc."),
+  }
+  const job = {
+    jobType: yup 
+    .array()
+    .min(1, 'Loại công việc là bắt buộc'),
+    career: yup
+    .array()
+    .min(1, 'Ngành nghề là bắt buộc'),
+    payForm: yup
+    .array()
+    .min(1, 'Hình thức trả lương là bắt buộc')
+  }
+const market ={
+  categories: yup
+  .array()
+  .min(1, 'Danh mục hỗ trợ là bắt buộc')
+}
+  
+  const validationSchema = yup.object(initValidate);
   const formik = useFormik({
     initialValues: {
       title: "",
       content: "",
       typeOfTransportation: [],
       transportProductType: [],
-      name: (isGetInfo && listInfo?.name) || "",
-      phone: (isGetInfo && listInfo?.phone) || "",
-      email: (isGetInfo && listInfo?.email) || "",
-      addressLocation: (isGetInfo && listInfo?.addressLocation) || "",
+      name:  "",
+      phone: "",
+      email: "",
+      addressLocation: "",
       gender: "",
       academicLevel: '',
       experience: '',
@@ -74,25 +130,59 @@ const PostUser = ({ data }) => {
       jobType: [],
       payForm: [],
       placeType: [],
-      categories:[],
+      categories: [],
       formOfSupport: [],
-      quantityRecruit: undefined,
+      quantityRecruit: null,
       yearTo: '',
       yearFrom: '',
-      address: undefined
+      address: '',
+      birthYear: ''
 
     },
     enableReinitialize: true,
+    validateOnChange: true,
     validationSchema: validationSchema,
     onSubmit: (values) => {
+      if(!srcImage){
+        return setMessage({
+          ...message,
+          message: 'Hình ảnh là bắt buộc',
+          state: true,
+          type: 'error'
+        })
+      }
       try {
-        console.log(values);
+        console.log({...values, address:resultAccommodation });
       } catch (error) {
         console.log(error);
       }
     },
+    
   });
- 
+  const handleCloseMessage = ()=>{
+    setMessage({
+      ...message,
+      state: false,
+    })
+  }
+  const handleCheckInfo = (val) => {
+    setIsGetInfo(val?.target?.checked);
+    if(val?.target?.checked){
+      formik.setFieldValue('name',listInfo?.name|| '');
+      formik.setFieldValue('phone',listInfo?.phone || '');
+      formik.setFieldValue('email',listInfo?.email|| '');
+      formik.setFieldValue('addressLocation',listInfo?.addressLocation|| '');
+    } else{
+      formik.setFieldValue('name','');
+      formik.setFieldValue('phone','');
+      formik.setFieldValue('email','');
+      formik.setFieldValue('addressLocation','');
+    }
+  };
+  const handleChangeInfoDefault=(value)=>{
+    formik.handleChange(value);
+    setIsGetInfo(false);
+  }
   return (
     <Box>
       <form onSubmit={formik.handleSubmit}>
@@ -114,7 +204,7 @@ const PostUser = ({ data }) => {
             helperText={formik.touched.title && formik.errors.title}
           />
           {/* Nếu type là tuyển dụng (id = 7) thì show field số lượng tuyển dụng */}
-          {data?.id === 7 && 
+          {data?.id === 7 &&
             <CssTextField
               fullWidth
               id="quantityRecruit"
@@ -127,7 +217,7 @@ const PostUser = ({ data }) => {
               error={formik.touched.quantityRecruit && Boolean(formik.errors.quantityRecruit)}
               helperText={formik.touched.quantityRecruit && formik.errors.quantityRecruit}
             />}
-          {data?.fieldExtra?.map((e,i) => {
+          {data?.fieldExtra?.map((e, i) => {
             return (
               <CustomSelect
                 id={e?.type}
@@ -142,31 +232,30 @@ const PostUser = ({ data }) => {
           })}
           {data?.categoryId === 35 && <Box>
             <CssTextField
-            fullWidth
-            id="address"
-            name="address"
-            label="Khu vực chỗ ở *"
-            type="address"
-            size="small"
-            value={formik.values.address}
-            onChange={formik.handleChange}
-            onClick={handleFocusAccommodation}
-            error={formik.touched.address && Boolean(formik.errors.address)}
-            helperText={formik.touched.address && formik.errors.address}
-          />
+              fullWidth
+              id="address"
+              name="address"
+              label="Khu vực chỗ ở *"
+              type="address"
+              size="small"
+              value={formik.values.address}
+              onClick={handleFocusAccommodation}
+              error={formik.touched.address && Boolean(formik.errors.address)}
+              helperText={formik.touched.address && formik.errors.address}
+            />
             <CssTextField
-            fullWidth
-            id="content"
-            name="content"
-            label="Diện tích *"
-            type="content"
-            size="small"
-            value={formik.values.content}
-            onChange={formik.handleChange}
-            error={formik.touched.content && Boolean(formik.errors.content)}
-            helperText={formik.touched.content && formik.errors.content}
-          />
-            </Box>}
+              fullWidth
+              id="area"
+              name="area"
+              label="Diện tích *"
+              type="number"
+              size="small"
+              value={formik.values.area}
+              onChange={formik.handleChange}
+              error={formik.touched.area && Boolean(formik.errors.area)}
+              helperText={formik.touched.area && formik.errors.area}
+            />
+          </Box>}
           <CssTextField
             fullWidth
             id="content"
@@ -181,10 +270,7 @@ const PostUser = ({ data }) => {
             error={formik.touched.content && Boolean(formik.errors.content)}
             helperText={formik.touched.content && formik.errors.content}
           />
-          {/* Nếu type là công việc (25) thì hiển thị */}
-          {data?.categoryId === 25 && (
-            <>
-
+          {data?.categoryId === 35 && <>
             <Box>
               <Typography
                 variant="h6"
@@ -193,94 +279,132 @@ const PostUser = ({ data }) => {
               >
                 Thông tin thêm
               </Typography>
-            {/* Nếu type là tuyển dụng (id = 7) thì show field số lượng tuyển dụng */}
-            {data?.id === 7 && <Grid container spacing={2}>
-              <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
+              <CssTextField
                 fullWidth
-                id="yearFrom"
-                name="yearFrom"
-                label="Năm sinh từ"
-                views={['year']}
-                maxDate={new Date()}
-                value={formik.values.yearFrom}
-                error={
-                  formik.touched.yearFrom && Boolean(formik.errors.yearFrom)
-                }
-                helperText={formik.touched.yearFrom && formik.errors.yearFrom}
-                inputFormat="yyyy"
-                onChange={(value) => {
-                  formik.setFieldValue("yearFrom", Date.parse(value));
-                }}
-                renderInput={(params) => {
-                  return <CssTextField fullWidth size="small" {...params} />;
-                }}
+                id="statusFurniture"
+                name="statusFurniture"
+                label="Tình trạng nội thất"
+                type="statusFurniture"
+                size="small"
+                value={formik.values.statusFurniture}
+                onChange={formik.handleChange}
+                error={formik.touched.statusFurniture && Boolean(formik.errors.statusFurniture)}
+                helperText={formik.touched.statusFurniture && formik.errors.statusFurniture}
               />
-            </LocalizationProvider>
-              </Grid> 
-              <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
+              <CssTextField
                 fullWidth
-                id="yearTo"
-                name="yearTo"
-                label="Năm sinh đến"
-                value={formik.values.yearTo}
-                minDate={new Date()}
-                views={['year']}
-                error={
-                  formik.touched.yearTo && Boolean(formik.errors.yearTo)
-                }
-                helperText={formik.touched.yearTo && formik.errors.yearTo}
-                inputFormat="yyyy"
-                onChange={(value) => {
-                  formik.setFieldValue("yearTo", Date.parse(value));
-                }}
-                renderInput={(params) => {
-                  return <CssTextField fullWidth size="small" {...params} />;
-                }}
+                id="request"
+                name="request"
+                label="Yêu cầu khác"
+                type="request"
+                size="small"
+                value={formik.values.request}
+                onChange={formik.handleChange}
+                error={formik.touched.request && Boolean(formik.errors.request)}
+                helperText={formik.touched.request && formik.errors.request}
               />
-            </LocalizationProvider>
-              </Grid> 
-            </Grid>}
-            {data?.id === 11 && <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                fullWidth
-                id="birthYear"
-                name="birthYear"
-                label="Năm sinh"
-                views={['year']}
-                value={formik.values.birthYear}
-                error={
-                  formik.touched.birthYear && Boolean(formik.errors.birthYear)
-                }
-                helperText={formik.touched.birthYear && formik.errors.birthYear}
-                inputFormat="yyyy"
-                onChange={(value) => {
-                  formik.setFieldValue("birthYear", Date.parse(value));
-                }}
-                renderInput={(params) => {
-                  return <CssTextField fullWidth size="small" {...params} />;
-                }}
-              />
-            </LocalizationProvider>
-            }
-              {data?.moreInfomation?.map((e,i) => (
-                <CustomSelect
-                  key={i}
-                  id={e?.type}
-                  name={e?.type}
-                  type={e?.type}
-                  label={e?.text}
-                  formik={formik}
-                  data={e?.children} 
-                  SelectProps={{ 
-                    multiple: false
-                  }}
-                />
-              ))}
             </Box>
+          </>}
+          {/* Nếu type là công việc (25) thì hiển thị */}
+          {data?.categoryId === 25 && (
+            <>
+              <Box>
+                <Typography
+                  variant="h6"
+                  fontSize="large"
+                  sx={{ padding: "10px 0" }}
+                >
+                  Thông tin thêm
+                </Typography>
+                {/* Nếu type là tuyển dụng (id = 7) thì show field số lượng tuyển dụng */}
+                {data?.id === 7 && <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DesktopDatePicker
+                        fullWidth
+                        id="yearFrom"
+                        name="yearFrom"
+                        label="Năm sinh từ"
+                        views={['year']}
+                        maxDate={new Date()}
+                        value={formik.values.yearFrom}
+                        error={
+                          formik.touched.yearFrom && Boolean(formik.errors.yearFrom)
+                        }
+                        helperText={formik.touched.yearFrom && formik.errors.yearFrom}
+                        inputFormat="yyyy"
+                        onChange={(value) => {
+                          formik.setFieldValue("yearFrom", new Date(value).getFullYear());
+                        }}
+                        renderInput={(params) => {
+                          return <CssTextField fullWidth size="small" {...params} />;
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DesktopDatePicker
+                        fullWidth
+                        id="yearTo"
+                        name="yearTo"
+                        label="Năm sinh đến"
+                        value={formik.values.yearTo}
+                        minDate={new Date(formik.values.yearFrom)|| undefined}
+                        views={['year']}
+                        error={
+                          formik.touched.yearTo && Boolean(formik.errors.yearTo)
+                        }
+                        helperText={formik.touched.yearTo && formik.errors.yearTo}
+                        inputFormat="yyyy"
+                        onChange={(value) => { 
+                          formik.setFieldValue("yearTo",  new Date(value).getFullYear());
+                        }}
+                        renderInput={(params) => {
+                          return <CssTextField fullWidth size="small" {...params} />;
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                </Grid>}
+                {data?.id === 11 && <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DesktopDatePicker
+                    fullWidth
+                    id="birthYear"
+                    name="birthYear"
+                    label="Năm sinh"
+                    views={['year']}
+                    maxDate={new Date()}
+                    value={formik.values.birthYear}
+                    error={
+                      formik.touched.birthYear && Boolean(formik.errors.birthYear)
+                    }
+                    helperText={formik.touched.birthYear && formik.errors.birthYear}
+                    inputFormat="yyyy"
+                    onChange={(value) => {
+                      formik.setFieldValue("birthYear",  new Date(value).getFullYear());
+                    }}
+                    renderInput={(params) => {
+                      return <CssTextField fullWidth size="small" {...params} />;
+                    }}
+                  />
+                </LocalizationProvider>
+                }
+                {data?.moreInfomation?.map((e, i) => (
+                  <CustomSelect
+                    key={i}
+                    id={e?.type}
+                    name={e?.type}
+                    type={e?.type}
+                    label={e?.text}
+                    formik={formik}
+                    data={e?.children}
+                    SelectProps={{
+                      multiple: false
+                    }}
+                  />
+                ))}
+              </Box>
             </>
           )}
 
@@ -291,7 +415,7 @@ const PostUser = ({ data }) => {
           >
             Tải ảnh lên (Tối đa một ảnh) {required}
           </Typography>
-          <UploadImage name="" />
+          <UploadImage src={srcImage}  setSrc={setSrcImage}/>
         </Box>
         <Box>
           <Typography variant="h6" fontSize="large" sx={{ padding: "10px 0" }}>
@@ -316,7 +440,7 @@ const PostUser = ({ data }) => {
           <FormControlLabel
             onChange={handleCheckInfo}
             sx={{ fontSize: "18px" }}
-            control={<Checkbox />}
+            control={<Checkbox checked={isGetInfo}/>}
             label="Dùng thông tin đã đăng ký"
           />
           <CssTextField
@@ -327,7 +451,7 @@ const PostUser = ({ data }) => {
             type="name"
             size="small"
             value={formik.values.name}
-            onChange={formik.handleChange}
+            onChange={handleChangeInfoDefault}
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
           />
@@ -339,7 +463,7 @@ const PostUser = ({ data }) => {
             type="addressLocation"
             size="small"
             value={formik.values.addressLocation}
-            onChange={formik.handleChange}
+            onChange={handleChangeInfoDefault}
             error={formik.touched.addressLocation && Boolean(formik.errors.addressLocation)}
             helperText={formik.touched.addressLocation && formik.errors.addressLocation}
           />
@@ -351,7 +475,7 @@ const PostUser = ({ data }) => {
             type="phone"
             size="small"
             value={formik.values.phone}
-            onChange={formik.handleChange}
+            onChange={handleChangeInfoDefault}
             error={formik.touched.phone && Boolean(formik.errors.phone)}
             helperText={formik.touched.phone && formik.errors.phone}
           />
@@ -363,7 +487,7 @@ const PostUser = ({ data }) => {
             type="email"
             size="small"
             value={formik.values.email}
-            onChange={formik.handleChange}
+            onChange={handleChangeInfoDefault}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
           />
@@ -374,7 +498,7 @@ const PostUser = ({ data }) => {
           </Typography> */}
             </>
           )}
-          <Box
+          {data?.categoryId === 1 && <Box
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -386,11 +510,12 @@ const PostUser = ({ data }) => {
               vui lòng chọn <b>Yêu cầu hỗ trợ</b>
             </Typography>
             <FormControlLabel
+             name='requestSupport'
               control={<Checkbox />}
               sx={{ width: "fit-content" }}
               label="Yêu cầu hỗ trợ"
             />
-          </Box>
+          </Box>}
           <FormControlLabel
             control={<Checkbox />}
             onClick={handleHadTimeClosed}
@@ -437,7 +562,8 @@ const PostUser = ({ data }) => {
           Đăng tin
         </BootstrapButton>
       </form>
-      <Accommodation open={accommodation} handleClose={handleCloseAccommodation} formik={formik}/>
+      <Message {...message} handleCloseMessage={handleCloseMessage}/>
+      <Accommodation open={accommodation} handleClose={handleCloseAccommodation} formik={formik} result={handleResultAccommodation} />
     </Box>
   );
 };

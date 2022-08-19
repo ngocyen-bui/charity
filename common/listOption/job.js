@@ -62,7 +62,7 @@ const listKindJob = [
         id: 3,
         key: "3",
         text: {
-          vn: "Thòi vụ",
+          vn: "Thời vụ",
           en: "Seasional",
         },
       },

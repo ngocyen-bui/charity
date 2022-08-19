@@ -10,7 +10,7 @@ const listGender = [
         id: 2,
         key: '2',
         text: {
-            vn: 'Nam',
+            vn: 'Nữ',
         }
     },
     {
