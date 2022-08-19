@@ -18,6 +18,8 @@ import { UploadImage } from "./UploadImage";
 import { Accommodation } from "./Accommondation";
 import { Message } from "./Message";
 import moment from "moment";
+import { createPost, getPost, putPost } from "../features/users/postAPI";
+import { useRouter } from "next/router";
 
 export { PostUser };
 
@@ -26,12 +28,13 @@ const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
 
-const PostUser = ({ data }) => {
+const PostUser = ({ data, dataPost }) => { 
+  const router = useRouter() 
   const [isGetInfo, setIsGetInfo] = useState(false);
-  const [hadTimeClose, setHadTimeClose] = useState(false);
+  const [hadTimeClose, setHadTimeClose] = useState(Boolean(dataPost));
   const [accommodation, setAccommodation] = useState(false);
   const [resultAccommodation, setResultAccommodation] = useState({});
-  const [srcImage, setSrcImage] = useState()
+  const [srcImage, setSrcImage] = useState(dataPost?.images?.image|| "")
   const [message, setMessage] = useState({ state: false, message: 'Đăng bài thành công', type: 'success', time: 2000 });
   const infoUser = getCookie("auth") ? JSON.parse(getCookie("auth")) : {};
   const { data: infoUsers } = useQuery(
@@ -40,10 +43,10 @@ const PostUser = ({ data }) => {
     {
       enabled: isGetInfo,
     }
-  );
+  );  
   const handleCloseAccommodation = () => {
     setAccommodation(false)
-  }
+  } 
   const listInfo = infoUsers?.data?.data;
 
   const handleHadTimeClosed = (val) => {
@@ -106,37 +109,90 @@ const PostUser = ({ data }) => {
     .array()
     .min(1, 'Hình thức trả lương là bắt buộc')
   }
-const market ={
-  categories: yup
-  .array()
-  .min(1, 'Danh mục hỗ trợ là bắt buộc')
-}
-  
-  const validationSchema = yup.object(initValidate);
+  const market ={
+    categories: yup
+    .array()
+    .min(1, 'Danh mục hỗ trợ là bắt buộc')
+  }
+  const needSupport = {
+    categories: yup
+    .array()
+    .min(1, 'Danh mục hỗ trợ là bắt buộc'),
+  }
+  const support = {
+    categories: yup
+    .array()
+    .min(1, 'Danh mục hỗ trợ là bắt buộc'),
+    formOfSupport: yup
+    .array()
+    .min(1, 'Hình thức hỗ trợ là bắt buộc'),
+  }
+  const transport = {
+    categories: yup
+    .array()
+    .min(1, 'Loại hình vận chuyển là bắt buộc'),
+    transportProductType:  yup
+    .array()
+    .min(1, 'Thông tin hàng hóa là bắt buộc'),
+  }
+  const resultValidate = { }
+  if(data?.categoryId === 4 && data?.type === 4){
+    resultValidate={
+      ...initValidate,
+      ...needSupport
+    }
+  }else if(data?.categoryId === 4 && data?.type === 3){
+    resultValidate={
+      ...initValidate,
+      ...support
+    }
+  }else if(data?.categoryId === 12){
+    resultValidate={
+      ...initValidate,
+      ...transport
+    }
+  }else if(data?.categoryId === 25){
+    resultValidate={
+      ...initValidate,
+      ...job
+    }
+  }else if(data?.categoryId === 35){
+    resultValidate={
+      ...initValidate,
+      ...place
+    }
+  }else if(data?.categoryId === 3){
+    resultValidate={
+      ...initValidate,
+      ...market
+    }
+  }
+  const validationSchema = yup.object(resultValidate);
   const formik = useFormik({
     initialValues: {
-      title: "",
-      content: "",
-      typeOfTransportation: [],
-      transportProductType: [],
-      name:  "",
-      phone: "",
-      email: "",
-      addressLocation: "",
-      gender: "",
-      academicLevel: '',
-      experience: '',
-      career: [],
-      jobType: [],
-      payForm: [],
-      placeType: [],
-      categories: [],
-      formOfSupport: [],
-      quantityRecruit: null,
-      yearTo: '',
-      yearFrom: '',
-      address: '',
-      birthYear: ''
+      title: dataPost?.title || "",
+      content: dataPost?.content || "",
+      typeOfTransportation: dataPost?.dataInfo?.transportProductType || [],
+      transportProductType: dataPost?.dataInfo?.transportProductType || [],
+      name:  dataPost?.creator?.name || "",
+      phone: dataPost?.creator?.phone|| "",
+      email: dataPost?.creator?.email|| "",
+      addressLocation:  dataPost?.dataInfo?.addressLocation|| "",
+      gender:  dataPost?.dataInfo?.gender|| "",
+      academicLevel: "",
+      experience:  dataPost?.dataInfo?.experience|| "",
+      career: dataPost?.dataInfo?.career || [],
+      jobType: dataPost?.dataInfo?.jobType || [],
+      payForm: dataPost?.dataInfo?.payForm || [],
+      placeType: dataPost?.dataInfo?.placeType || [],
+      categories:dataPost?.dataInfo?.categories || [],
+      formOfSupport: dataPost?.dataInfo?.formOfSupport || [],
+      quantityRecruit:dataPost?.dataInfo?.quantityRecruit || null,
+      yearTo: dataPost?.dataInfo?.yearTo || null,
+      yearFrom: dataPost?.dataInfo?.yearFrom || null,
+      address:  dataPost?.dataInfo?.address?.city?.name || "",
+      birthYear: '',
+      formOfSupport: []
 
     },
     enableReinitialize: true,
@@ -152,7 +208,67 @@ const market ={
         })
       }
       try {
-        console.log({...values, address:resultAccommodation });
+      let dataInfo ={...values, address:{
+          cityId: resultAccommodation?.cityId?.id || null,
+          districtId: resultAccommodation?.districtId?.id|| null,
+          wardId: resultAccommodation?.wardId?.id|| null,
+          detail: resultAccommodation?.detail||"",
+        },
+        academicLevel: [values.academicLevel],
+        email: undefined,
+        birthYear: undefined,phone: undefined,
+        name: undefined,
+        content: undefined,
+        title: undefined,
+        closedAt: undefined
+      }
+      
+      let  result = {
+        categoryId: data?.categoryId,
+        type: data?.type,
+        content: values?.content,
+        title: values?.title,
+        closedAt: values?.closedAt,
+        contactInfo: {
+          email: values?.email,
+          name: values?.name,
+          phone: values?.phone,
+          informationCurrent: isGetInfo?1:-1
+        },
+        dataInfo: JSON.parse(JSON.stringify(dataInfo)),
+      images: {
+        image: srcImage,
+        imageThumbnail: ''
+      }
+       }
+       if (Boolean(dataPost)) {
+           putPost({ id: dataPost?.id,data: result })
+           .then((res) => {
+             setMessage({ ...message, state: true }); 
+             router.push(`/gift/${res?.data?.data?.id}`);
+           })
+           .catch(() =>
+             setMessage({
+               message: "Đăng bài thất bại. Vui lòng thử lại sau.",
+               type: "error",
+               state: true,
+             })
+           );
+       } else {
+         createPost({ data: result })
+           .then((res) => {
+             setMessage({ ...message, state: true }); 
+             router.push(`/gift/${res?.data?.data?.id}`);
+           })
+           .catch(() =>
+             setMessage({
+               message: "Đăng bài thất bại. Vui lòng thử lại sau.",
+               type: "error",
+               state: true,
+             })
+           );
+       }
+     
       } catch (error) {
         console.log(error);
       }
@@ -442,7 +558,7 @@ const market ={
             sx={{ fontSize: "18px" }}
             control={<Checkbox checked={isGetInfo}/>}
             label="Dùng thông tin đã đăng ký"
-          />
+          /> 
           <CssTextField
             fullWidth
             id="name"
@@ -517,7 +633,7 @@ const market ={
             />
           </Box>}
           <FormControlLabel
-            control={<Checkbox />}
+            control={<Checkbox checked={hadTimeClose} />}
             onClick={handleHadTimeClosed}
             sx={{ width: "fit-content" }}
             label="Chọn thời hạn hiển thị tin"
@@ -559,7 +675,7 @@ const market ={
           fullWidth
           type="submit"
         >
-          Đăng tin
+          {dataPost?'Cập nhật tin':'Đăng tin'}
         </BootstrapButton>
       </form>
       <Message {...message} handleCloseMessage={handleCloseMessage}/>

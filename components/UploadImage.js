@@ -1,6 +1,6 @@
 import { Alert, Box, CardContent, DialogTitle, Grid, IconButton, Snackbar, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { upload } from "../features/Image";
+import { linkImage, upload } from "../features/Image";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,11 +27,11 @@ const UploadImage = ({src,setSrc}) => {
   }
   const handleUploadClick = (event) => {
     var file = event.target.files[0];
-    setSrc(URL.createObjectURL(file))
 
     // upload
     upload(file).then(res => {
       if (res) setState({ ...state, open: true });
+      setSrc(res?.id)
     }).catch(err => setState({ ...state, open: false, text: 'Upload failed', type: 'error' }))
   };
 
@@ -52,7 +52,7 @@ const UploadImage = ({src,setSrc}) => {
     <>
       <CardContent sx={{ padding: "0 !important", position: "relative" }}>
         {src ? (
-          <img src={src} style={{ width: "100px", height: "100px", objectFit: 'cover', backgroundColor: 'white', border: '1px solid #ddd' }} onClick={showActionImage}></img>
+          <img src={linkImage(src)} style={{ width: "100px", height: "100px", objectFit: 'cover', backgroundColor: 'white', border: '1px solid #ddd' }} onClick={showActionImage}></img>
         ) : (
           <Grid
             container
@@ -101,7 +101,7 @@ const UploadImage = ({src,setSrc}) => {
           }}
         >
           <VisibilityIcon sx={{ cursor: "pointer", width: "18px" }} onClick={handleOpenModalImage} />
-          <label style={{ height: "24px" }} for="upload-image-post">
+          <label style={{ height: "24px" }} htmlFor="upload-image-post">
             <input id="upload-image-post" hidden accept="image/*" type="file" onChange={handleUploadClick} />
             <CloudUploadIcon sx={{ cursor: "pointer", width: "18px" }} />
           </label>

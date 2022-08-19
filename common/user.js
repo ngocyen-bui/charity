@@ -99,7 +99,7 @@ const organization = {
   key: '2',
   text: 'Tổ chức',
   type: 2,
-  color: '#91aeed'
+  color: 'rgb(137, 208, 242)'
 }
 
 

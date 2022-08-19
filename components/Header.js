@@ -105,7 +105,7 @@ function Header({isShowSubBar=true, isChange=false}) {
   return (
     <>
      <Box sx={{position:"fixed", top: '0', right: '0', left: '0', zIndex: '99'}}>
-      <div position="static" style={isShowSubBar ? {boxShadow: 'none'}: {}} className={"header-layout"} component="nav">
+      <div style={isShowSubBar ? {boxShadow: 'none'}: {}} className={"header-layout"} component="nav">
         <Container maxWidth="md">
           <Box
             sx={{
@@ -119,16 +119,7 @@ function Header({isShowSubBar=true, isChange=false}) {
               },
               "::-webkit-scrollbar": { display: "none" },
             }}
-          >
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
+          > 
 
             <Box sx={{ display: "flex", gap: 2 }}>
               {infoUserString && infoUserString?.length > 0 ? (

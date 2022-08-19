@@ -16,6 +16,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { getPostOfUser, updateStatusPost } from "../../features/users/userAPI";
 import { useQuery } from "@tanstack/react-query";
 import {
+  defaultAvatarImage,
   defaultImage,
   ended,
   listTypeAccount,
@@ -30,6 +31,7 @@ import { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 import { Message } from "../Message";
+import { listExtraPost } from "../../common/post";
 
 export { RenderTabPanel };
 const edit = { id: 1, key: "1", text: "Chỉnh sửa tin" };
@@ -114,6 +116,9 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
   const handleCloseMessage = () => {
     setStateUpdateStatusPost({ ...stateUpdateStatusPost,state: false });
   };
+  const handleClickDetailPost = (id)=>{
+    router.push(`/gift/${id}`)
+  }
   if (isFetching)
     return (
       <Box sx={{ alignItems: "center" }}>
@@ -130,7 +135,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
       </Box>
     );
   return (
-    <TabPanel value={typePost} index={typePost}>
+    <TabPanel value={typePost} index={typePost} >
       <Box
         sx={{
           display: "flex",
@@ -140,13 +145,14 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
         }}
       >
         {listItemPost?.length > 0 ? (
-          <Grid container spacing={1}>
+          <Grid container spacing={1} >
             {listItemPost?.map((e) => {
               const typeAccount = listTypeAccount.find(
                 (t) => t.type * 1 === e?.creator?.type * 1
               );
+              const typePost = listExtraPost.find(t => t.type === e.type)
               return (
-                <Grid item xs={6} key={e?.id}>
+                <Grid item xs={6} key={e?.id} >
                   <Paper
                     className="animate__animated animate__backInUp"
                     variant="outlined"
@@ -168,9 +174,11 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                             boxShadow: "0px 4px 10px #ddd",
                           }}
                           src={
-                            linkImage(e?.creator?.images?.avatar) ||
+                            e?.creator?.images?.avatar?
+                            linkImage(e?.creator?.images?.avatar) :
                             linkImage(defaultAvatarImage)
                           }
+                          onClick={()=>handleClickDetailPost(e?.id)}
                         ></Avatar>
                         <Box
                           sx={{
@@ -178,6 +186,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                             flexDirection: "column",
                             justifyContent: "space-between",
                           }}
+                          onClick={()=>handleClickDetailPost(e?.id)}
                         >
                           <Typography
                             variant="body2"
@@ -196,8 +205,8 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                             />
                             <Chip
                               size="small"
-                              label="Nhà cung cấp"
-                              color="success"
+                              label={typePost.text}
+                              sx={{ background: 'orange', lineHeight: '24px' }}
                             />
                           </Stack>
                         </Box>
@@ -224,9 +233,10 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                         objectFit="cover"
                         style={{ borderRadius: "10px" }}
                         alt="Image"
+                        onClick={()=>handleClickDetailPost(e?.id)}
                       />
                     </Box>
-                    <Box>
+                    <Box onClick={()=>handleClickDetailPost(e?.id)}> 
                       <Typography
                         variant="h6"
                         sx={{
