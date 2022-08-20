@@ -214,7 +214,7 @@ export default function Home() {
           <Box sx={{display: 'flex', gap: '10px'}}>
             
             {typePost?.children?.map(e => {
-              return <BootstrapButton onClick={() =>handleClickTypeExtraPost(e)} 
+              return <BootstrapButton key={e?.type} onClick={() =>handleClickTypeExtraPost(e)} 
               variant="contained" 
               className={filterWithType === e?.type ? 'active-button' : ""} 
               sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">
