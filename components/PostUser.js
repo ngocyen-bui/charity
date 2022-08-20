@@ -37,17 +37,9 @@ const PostUser = ({ data, dataPost }) => {
   const [srcImage, setSrcImage] = useState(dataPost?.images?.image|| "")
   const [message, setMessage] = useState({ state: false, message: 'Đăng bài thành công', type: 'success', time: 2000 });
   const infoUser = getCookie("auth") ? JSON.parse(getCookie("auth")) : {};
-  const { data: infoUsers } = useQuery(
-    ["user", infoUser?.id],
-    () => getDetailUser(infoUser?.id),
-    {
-      enabled: isGetInfo,
-    }
-  );  
   const handleCloseAccommodation = () => {
     setAccommodation(false)
   } 
-  const listInfo = infoUsers?.data?.data;
 
   const handleHadTimeClosed = (val) => {
     setHadTimeClose(val?.target?.checked);
@@ -81,6 +73,9 @@ const PostUser = ({ data, dataPost }) => {
     addressLocation: yup 
     .string()
     .required("Địa chỉ là bắt buộc."),
+    name: yup
+    .string()
+    .required("Tên là bắt buộc."),
     email: yup
     .string()
     .email('Email không đúng định dạng')
@@ -166,6 +161,10 @@ const PostUser = ({ data, dataPost }) => {
       ...initValidate,
       ...market
     }
+  }else{
+    resultValidate={
+      ...initValidate, 
+    }
   }
   const validationSchema = yup.object(resultValidate);
   const formik = useFormik({
@@ -174,10 +173,10 @@ const PostUser = ({ data, dataPost }) => {
       content: dataPost?.content || "",
       typeOfTransportation: dataPost?.dataInfo?.transportProductType || [],
       transportProductType: dataPost?.dataInfo?.transportProductType || [],
-      name:  dataPost?.creator?.name || "",
-      phone: dataPost?.creator?.phone|| "",
-      email: dataPost?.creator?.email|| "",
-      addressLocation:  dataPost?.dataInfo?.addressLocation|| "",
+      name: "",
+      phone:"",
+      email:  "",
+      addressLocation:  "",
       gender:  dataPost?.dataInfo?.gender|| "",
       academicLevel: "",
       experience:  dataPost?.dataInfo?.experience|| "",
@@ -187,12 +186,13 @@ const PostUser = ({ data, dataPost }) => {
       placeType: dataPost?.dataInfo?.placeType || [],
       categories:dataPost?.dataInfo?.categories || [],
       formOfSupport: dataPost?.dataInfo?.formOfSupport || [],
-      quantityRecruit:dataPost?.dataInfo?.quantityRecruit || null,
+      quantityRecruit: dataPost?.dataInfo?.quantityRecruit || null,
       yearTo: dataPost?.dataInfo?.yearTo || null,
       yearFrom: dataPost?.dataInfo?.yearFrom || null,
       address:  dataPost?.dataInfo?.address?.city?.name || "",
       birthYear: '',
-      formOfSupport: []
+      formOfSupport: [],
+      closedAt: dataPost?.dataInfo?.closedAt|| null
 
     },
     enableReinitialize: true,
@@ -274,7 +274,7 @@ const PostUser = ({ data, dataPost }) => {
       }
     },
     
-  });
+  }); 
   const handleCloseMessage = ()=>{
     setMessage({
       ...message,
@@ -282,12 +282,15 @@ const PostUser = ({ data, dataPost }) => {
     })
   }
   const handleCheckInfo = (val) => {
-    setIsGetInfo(val?.target?.checked);
-    if(val?.target?.checked){
-      formik.setFieldValue('name',listInfo?.name|| '');
-      formik.setFieldValue('phone',listInfo?.phone || '');
-      formik.setFieldValue('email',listInfo?.email|| '');
-      formik.setFieldValue('addressLocation',listInfo?.addressLocation|| '');
+    setIsGetInfo(val?.target?.checked); 
+    if(val?.target?.checked){ 
+      getDetailUser(infoUser?.id).then((user) => {
+        const listInfo = user?.data?.data;
+        formik.setFieldValue('name',listInfo?.name|| '');
+        formik.setFieldValue('phone',listInfo?.phone || '');
+        formik.setFieldValue('email',listInfo?.email|| '');
+        formik.setFieldValue('addressLocation',listInfo?.addressLocation|| '');
+      }); 
     } else{
       formik.setFieldValue('name','');
       formik.setFieldValue('phone','');
@@ -653,6 +656,7 @@ const PostUser = ({ data, dataPost }) => {
                 id="closedAt"
                 name="closedAt"
                 label="Ngày ngưng hiển thị tin"
+                minDate={new Date()}
                 value={formik.values.closedAt}
                 error={
                   formik.touched.closedAt && Boolean(formik.errors.closedAt)

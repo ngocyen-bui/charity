@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
+import { Avatar, Box, Button, IconButton, List, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Container } from "@mui/system";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -9,12 +9,13 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useEffect, useState } from "react";
 import { CarIcon, GiftIcon } from "../utils/CustomIcon";
 import Link from "next/link";
-import { defaultAvatarImage } from "../common/user";
+import { defaultAvatarImage, listTypeAccount } from "../common/user";
 import { linkImage } from "../features/Image";
 import { getCookie, setCookie } from "cookies-next";
 import { useQuery } from "@tanstack/react-query";
 import { getDetailUser } from "../features/users/userAPI";
 import { useRouter } from "next/router";
+import { listTypePost } from "../common/post";
 export { Header };
 const navItems = [
   {
@@ -24,19 +25,19 @@ const navItems = [
     url: '/'
   },
   {
-    id: 2,
+    id: 51,
     text: "Cộng đồng",
     icon: <PublicIcon />,
     url: '/'
   },
   {
-    id: 3,
+    id: 52,
     text: "Đăng tin",
     icon: <BorderColorOutlinedIcon />,
     url: '/user/post'
   },
   {
-    id: 4,
+    id: 53,
     text: "Thông báo",
     icon: <NotificationsOutlinedIcon />,
     url: '/'
@@ -45,38 +46,38 @@ const navItems = [
 
 const subNavItems = [
   {
-    id: 5,
+    id: 4,
     text: "Cho tặng",
     icon: <GiftIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
-    id: 6,
+    id: 12,
     text: "Vận chuyển",
     icon: <CarIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
-    id: 7,
+    id: 25,
     text: "công việc",
     icon: <GiftIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
-    id: 8,
+    id: 35,
     text: "Chỗ ở",
     icon: <GiftIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
-    id: 9,
+    id: 3,
     text: "Chợ yêu thương",
     icon: <GiftIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
 ];
 
-function Header({isShowSubBar=true, isChange=false}) {
+function Header({isShowSubBar=true, isChange=false, handleChange}) {
   const router = useRouter()
   const [isNavBarActive, setIsNavBarActive] = useState(1);
   const infoUserString = getCookie('auth')
@@ -96,11 +97,28 @@ function Header({isShowSubBar=true, isChange=false}) {
         setCookie('auth', auth)
     }
   },[data])
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-  const handleClickNavBarItem = (val) => {
+ 
+  const handleClickNavBarItem = (e,val) => {
     setIsNavBarActive(val * 1);
+    const acc =  listTypePost.find(e => e.id === val*1) ;
+    const accClone = {...acc}
+    if(val*1 === 1){
+      accClone.children = [
+        {
+          categoryId: 1, 
+          type: 2,
+          text: "Tổ chức", 
+      },
+      {
+        categoryId: 1, 
+        type: 3,
+        text: "Mạnh thường quân", 
+    }
+      ]
+    }
+    if(val*1 < 50 && typeof(handleChange) ==='function'){
+      handleChange(accClone);
+    }
   };
   return (
     <>
@@ -187,7 +205,7 @@ function Header({isShowSubBar=true, isChange=false}) {
                     className={
                       isNavBarActive === item.id ? "isActiveNavBar" : ""
                     }
-                    onClick={() => handleClickNavBarItem(item.id)}
+                    onClick={(e) => handleClickNavBarItem(e,item.id)}
                     startIcon={item.icon}
                     style={{
                       color: "#fff",
@@ -225,7 +243,7 @@ function Header({isShowSubBar=true, isChange=false}) {
                   className={
                     isNavBarActive === item.id ? "isActiveSubNavBar" : ""
                   }
-                  onClick={() => handleClickNavBarItem(item.id)}
+                  onClick={(e) => handleClickNavBarItem(e,item.id)}
                   key={item.id}
                   style={{
                     width: "100px",

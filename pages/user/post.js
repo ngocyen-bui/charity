@@ -11,7 +11,6 @@ import { useState } from "react";
 import { Footer, PostUser } from "../../components";
 import { listTypePost } from "../../common/post";
 import { getCookie } from "cookies-next";
-
 export default function Post() {
   const [type, setType] = useState();
   const [extraType, setExtraType] = useState();
@@ -28,8 +27,10 @@ export default function Post() {
     setExtraType(null);
   };
   const handleChooseExtraTypePost = (e) => {
-    setExtraType(e);
+    setExtraType(e); 
   };
+  const infoUser =  getCookie("auth") && JSON.parse(infoUserString);
+  
   return (
     <>
       <Header isShowSubBar={false} />
@@ -74,7 +75,8 @@ export default function Post() {
                       {type?.extraText}
                     </Typography>
                     <Box className="list-cate">
-                      {type?.children?.map((e) => {
+                      {type?.children?.map((e) => { 
+                        if(infoUser?.type === 1 && e.id === 2) return <></>
                         return (
                           <Box
                             className="item-cate"

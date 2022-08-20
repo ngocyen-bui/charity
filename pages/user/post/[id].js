@@ -34,9 +34,7 @@ export default function DetailPost (){
         <Header isShowSubBar={false}/>
         <Container maxWidth="md">
             <Box sx={{padding: '24px'}}>
-                {infoPost && <PostUser data={data} dataPost={infoPost?.data?.data} />}
-               
-
+                {infoPost && <PostUser data={data} dataPost={infoPost?.data?.data} />} 
             </Box>
         </Container>
         </>

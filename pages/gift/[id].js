@@ -37,6 +37,9 @@ export default function GiftPost() {
   const typeAccount = listTypeAccount.find(
     (t) => t.type * 1 === listData?.creator?.type * 1
   );
+  const handleRedirect = ()=>{
+    router.push(`/user/${listData?.creator?.id}`)
+  }
   return (
     <>
       <Header isShowSubBar={false} />
@@ -144,7 +147,9 @@ export default function GiftPost() {
                   width: '56px',
                   height: '56px',
                   boxShadow: "0px 4px 10px #ddd",
+                  cursor: "pointer",
                 }}
+                onClick={handleRedirect}
                 src={
                   listData?.creator?.images?.image ?
                   linkImage(listData?.creator?.images?.image) :
@@ -165,7 +170,9 @@ export default function GiftPost() {
                   sx={{
                     textTransform: "uppercase",
                     fontWeight: "bold",
+                    cursor: 'pointer'
                   }}
+                  onClick={handleRedirect}
                 >
                   {listData?.contactInfo?.name}
                 </Typography>

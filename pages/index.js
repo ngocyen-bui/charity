@@ -8,12 +8,12 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CloseIcon from '@mui/icons-material/Close';
 import { getListPost } from "../features/users/postAPI";
 import { useEffect, useState } from "react";
-import { defaultAvatarImage, defaultImage, listTypeAccount } from "../common/user";
-import { listExtraPost } from "../common/post";
+import { defaultAvatarImage, defaultImage, listTypeAccount } from "../common/user"; 
 import { linkImage } from "../features/Image";
 import moment from "moment";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { news } from "../common/post";
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     border: `2px solid #red`,
@@ -22,8 +22,8 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     color: 'white'
   },
 }));
-let sortedBy = `[{"key":"STARTED_AT","reverse":false}]`
-let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
+// let sortedBy = `[{"key":"STARTED_AT","reverse":false}]`
+// let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
 
 const filterFormat = (filter) => {
   return "?" + new URLSearchParams(JSON.parse(JSON.stringify(filter))).toString();
@@ -34,85 +34,148 @@ export default function Home() {
   const [state, setState] = useState([]); 
   const [valueSearch, setValueSearch] = useState("");
   const [filterWithType,setFilterWithType] = useState()
-  const [loadMore, setLoadMore] = useState(true); 
+  const [loadMore, setLoadMore] = useState(false);  
+  const [typePost,setTypePost] = useState(news) 
   const [filter,setFilter] = useState({
     memberTypes: `[${[2,3].join(',')}]`,
     types: `[1]`,
     categoryId: 1,
     page: 1,
-    size: 12
+    size: 12,
   });
 
   const handleMouseDown =(event)=>{
-    event.preventDefault();
-    
+    event.preventDefault(); 
   }
   const handleSetSearchValue = (e)=>{
-    setValueSearch(e.target.value) 
+    setValueSearch(e.target.value);
   }
   const handleSearchListPost= ()=>{
-    setState([])
-    setFilter({
-      ...filter,
-      page: 1, 
-      creatorName: valueSearch
-    })
-    setLoadMore(true);
+    if(valueSearch){ 
+        reloadData({
+        ...filter,
+        page: 1, 
+        creatorName: valueSearch, 
+      })
+      setFilter({
+        ...filter,
+        page: 1, 
+        creatorName: valueSearch, 
+      })
+    }else {
+      delete filter.creatorName;
+      setFilter({
+        ...filter,
+        page: 1, 
+      })
+    } 
     router.replace(`/${filterFormat({...filter,page: undefined})}`)
   }
   const handleClearSearchListPost= ()=>{
     setValueSearch('');
+    delete filter.creatorName;
     reloadData({
       ...filter, 
-      page: 1,
-      creatorName: undefined
+      page: 1
     })
-  }
-  ///sponsor
-  const handleClickOrganization =()=>{ 
-    if(filterWithType === 2){
-      setFilterWithType();  
-      reloadData({
-        ...filter,
-        memberTypes: `[${[2,3].join(',')}]`,
-        page: 1,
-      })
-    } else{
-      setFilterWithType(2); 
-      reloadData({
-        ...filter,
-        memberTypes: `[${[2].join(',')}]`,
-        page: 1,
-      })
-    } 
-  }
-  const handleClickSponsor =()=>{  
-    if(filterWithType === 3){
-      setFilterWithType();  
-      reloadData({
-        ...filter,
-        memberTypes: `[${[2,3].join(',')}]`,
-        page: 1,
-      })
-    } else{
-      setFilterWithType(3); 
-      reloadData({
-        ...filter,
-        memberTypes: `[${[3].join(',')}]`,
-        page: 1,
-      })
-    } 
-  } 
-
-  const reloadData = (filter)=>{
-    setState([])
-    setFilter(filter)
-    setLoadMore(true);
+    setFilter({
+      ...filter, 
+      page: 1
+    })
+  }   
+  const reloadData = (filter)=>{  
+    setState([]) 
+    setTimeout(()=>{
+      getListPost({filter: filterFormat({...filter})}).then(
+        res => setState(res?.data?.data)
+      )
+    })
     router.replace(`/${filterFormat({...filter,page: undefined})}`)
-  }
+  } 
+  const handleClickTypeExtraPost =(value)=>{    
+    delete filter.memberTypes;
+    delete filter.types; 
+    if(value.categoryId === 1){
+      if(filterWithType && filterWithType === value?.type) {
+        delete filter.type; 
+        setFilterWithType()
+        reloadData({
+          ...filter,  
+          page: 1, 
+          isAvailable: 1
+        })
+        setFilter({
+          ...filter, 
+          type: value?.type, 
+          page: 1, 
+          isAvailable: 1
+        })
+      }else{
+        setFilterWithType(value.type) 
+        reloadData({
+          ...filter, 
+          memberTypes: `[${value.type}]`,
+          page: 1, 
+          isAvailable: 1
+        })
+      }
+    } else if(filterWithType && filterWithType === value?.type) {
+      delete filter.type; 
+      setFilterWithType()
+      reloadData({
+        ...filter,  
+        page: 1, 
+        isAvailable: 1
+      })
+      setFilter({
+        ...filter, 
+        type: value?.type, 
+        page: 1, 
+        isAvailable: 1
+      })
+    }else{
+      setFilterWithType(value.type) 
+      reloadData({
+        ...filter, 
+        type: value?.type, 
+        page: 1, 
+        isAvailable: 1
+      })
+    }
+  } 
+  const handleFilter = (val)=>{   
+    setTypePost(val)
+    setFilterWithType()
+    delete filter.memberTypes;
+    delete filter.types;
+    delete filter.type;
+    if(val?.id === 1){
+      reloadData({
+        ...filter,
+        memberTypes: `[${[2,3].join(',')}]`,
+        page: 1,
+        categoryId: val?.id, 
+      })
+    }else{
+          reloadData({
+        ...filter,
+        // memberTypes: `[${[2,3].join(',')}]`,
+        page: 1,
+        categoryId: val?.id,
+        isAvailable: 1
+      })
+    }
+
+    setFilter({
+      ...filter, 
+      page: 1,
+      categoryId: val?.id,
+      isAvailable: 1
+    })
+  } 
   return (
     <>
-      <Header />
+      <Header handleChange={handleFilter}/>
       <Container maxWidth="md">
         <Box sx={{ padding: "24px 0" }}>
           <Grid container spacing={2}>
@@ -149,8 +212,15 @@ export default function Home() {
           
           </Grid>
           <Box sx={{display: 'flex', gap: '10px'}}>
-          <BootstrapButton onClick={handleClickOrganization} variant="contained" className={filterWithType === 2?'active-button':""} sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">Tổ chức</BootstrapButton>
-          <BootstrapButton onClick={handleClickSponsor} variant="contained" className={filterWithType === 3?'active-button':""} sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">Mạnh thường quân</BootstrapButton>
+            
+            {typePost?.children?.map(e => {
+              return <BootstrapButton onClick={() =>handleClickTypeExtraPost(e)} 
+              variant="contained" 
+              className={filterWithType === e?.type ? 'active-button' : ""} 
+              sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">
+                {e?.text}
+                </BootstrapButton>
+            })} 
         </Box>  
         </Box>
           <Box className="wrapper-list-post">
