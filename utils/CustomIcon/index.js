@@ -1,2 +1,5 @@
 export * from './GiftIcon'
 export * from './CarIcon'
+export * from './HomeIcon'
+export * from './MarketIcon'
+export * from './BagIcon'

@@ -1,16 +1,11 @@
 import { Box, Breadcrumbs, Container, Link, Typography } from "@mui/material";
-import { Header } from "../../components/Header";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import CardGiftcardOutlinedIcon from "@mui/icons-material/CardGiftcardOutlined";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import HouseOutlinedIcon from "@mui/icons-material/HouseOutlined";
-import LocalGroceryStoreOutlinedIcon from "@mui/icons-material/LocalGroceryStoreOutlined";
+import { Header } from "../../components/Header"; 
 import { useState } from "react";
 import { Footer, PostUser } from "../../components";
 import { listTypePost } from "../../common/post";
 import { getCookie } from "cookies-next";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"; 
+
 export default function Post() {
   const [type, setType] = useState();
   const [extraType, setExtraType] = useState();
@@ -33,7 +28,7 @@ export default function Post() {
   
   return (
     <>
-      <Header isShowSubBar={false} />
+      <Header isShowSubBar={false} type={52} />
       <Container maxWidth="md">
         {infoUserString?.length > 0 ? (
           <>

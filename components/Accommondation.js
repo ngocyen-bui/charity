@@ -74,11 +74,13 @@ const Accommodation = ({ open, handleClose, formik, result }) => {
     onSubmit: () => { 
       result(listResult) 
       handleClose();
+      formikAccommodation.resetForm()
     },
   });
 
   const handleSubmitAccommondation = () => {
     result(listResult);
+    formikAccommodation.resetForm()
     handleClose()
   }
   const handleChangeProvince = (val, record) => {
@@ -228,4 +230,4 @@ const CustomSelectAccommondation = ({ data, formik, type, label, ...rest }) => {
   )
 };
 
-export { CustomSelect }
+export { CustomSelect,CustomSelectAccommondation }

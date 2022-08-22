@@ -13,6 +13,8 @@ import React, { useState } from "react";
 import { BootstrapButton, CssTextField, KindOfAccount } from "../../utils";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { registerAccount } from "../../features/users/userAPI";
+import { useRouter } from "next/router";
 
 const listType = [
   {
@@ -40,6 +42,7 @@ const phoneRegExp =
 
 
 export default function Register() {
+  const router = useRouter()
   const [type, setType] = useState(1);
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [isActiveDrawer, setIsActiveDrawer] = useState({
@@ -81,7 +84,7 @@ export default function Register() {
       .required("Xác nhận mật khẩu là bắt buộc")
       .oneOf([yup.ref("password")], "Mật khẩu không trùng nhau"),
   
-    fullname: yup
+    name: yup
       .string("Full name is required")
       .required("Họ và tên là bắt buộc"), 
   
@@ -96,11 +99,11 @@ export default function Register() {
   if(type === 2){
     listValidation = {
         ...listValidation, 
-        organization_name: yup
+        organization: yup
         .string("Organization name is required")
         .required("Tên tổ chức là bắt buộc"),
     
-        authorized_person: yup
+        representName: yup
         .string("Authorized person is required")
         .required("Người đại diện là bắt buộc"),
     }
@@ -112,9 +115,9 @@ export default function Register() {
       email: "",
       password: "",
       confirm_password: "",
-      fullname: "",
-      authorized_person: "",
-      organization_name: "",
+      name: "",
+      representName: "",
+      organization: "",
       phone: "",
       checkbox: false,
     },
@@ -122,10 +125,18 @@ export default function Register() {
     validateOnChange: true,
     validateOnBlur: true,
     onSubmit: (values) => {
+      console.log(values)
         if(values.checkbox === false){
             setOpenSnackbar(true)
             return;
+        }else{
+          delete values.checkbox;
+          delete values.confirm_password;
+          registerAccount({...values,type: type}).then(res => {
+            router.push('/');
+          });
         }
+
     },
   });
   return (
@@ -245,53 +256,53 @@ export default function Register() {
                 <CssTextField
                   fullWidth
                   label="Họ và tên *"
-                  id="fullname"
+                  id="name"
                   size="small"
-                  name="fullname"
+                  name="name"
                   variant="outlined"
-                  value={formik.values.fullname}
+                  value={formik.values.name}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.fullname && Boolean(formik.errors.fullname)
+                    formik.touched.name && Boolean(formik.errors.name)
                   }
-                  helperText={formik.touched.fullname && formik.errors.fullname}
+                  helperText={formik.touched.name && formik.errors.name}
                 />
               ) : (
                 <>
                   <CssTextField
                     fullWidth
-                    id='organization_name'
+                    id='organization'
                     label="Tên tổ chức *"
                     size="small"
-                    name="organization_name"
+                    name="organization"
                     variant="outlined"
-                    value={formik.values.organization_name}
+                    value={formik.values.organization}
                     onChange={formik.handleChange}
                     error={
-                      formik.touched.organization_name &&
-                      Boolean(formik.errors.organization_name)
+                      formik.touched.organization &&
+                      Boolean(formik.errors.organization)
                     }
                     helperText={
-                      formik.touched.organization_name &&
-                      formik.errors.organization_name
+                      formik.touched.organization &&
+                      formik.errors.organization
                     }
                   />
                   <CssTextField
                     fullWidth
                     label="Người đại diện *"
-                    id='authorized_person'
+                    id='representName'
                     size="small"
-                    name="authorized_person"
+                    name="representName"
                     variant="outlined"
-                    value={formik.values.authorized_person}
+                    value={formik.values.representName}
                     onChange={formik.handleChange}
                     error={
-                      formik.touched.authorized_person &&
-                      Boolean(formik.errors.authorized_person)
+                      formik.touched.representName &&
+                      Boolean(formik.errors.representName)
                     }
                     helperText={
-                      formik.touched.authorized_person &&
-                      formik.errors.authorized_person
+                      formik.touched.representName &&
+                      formik.errors.representName
                     }
                   />
                 </>

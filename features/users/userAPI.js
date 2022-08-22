@@ -16,6 +16,9 @@ const logoutAccount = () => {
     })
 }
 
+const registerAccount = (data) => { 
+    return axiosClient.post(`sign-up`,data)
+}
 const getDetailUser = async (id) => {
     const token = getCookie('token'); 
     return await axiosClient.get(`members/${id}`,{
@@ -82,5 +85,6 @@ export {
     getPostOfUser,
     putFollowerlUser,
     updateStatusPost,
+    registerAccount,
     getFollowerOfUser
 }

@@ -1,5 +1,4 @@
-import { Avatar, Box, Button, IconButton, List, Typography } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Avatar, Box, Button,Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PublicIcon from "@mui/icons-material/Public";
@@ -7,16 +6,15 @@ import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useEffect, useState } from "react";
-import { CarIcon, GiftIcon } from "../utils/CustomIcon";
+import { BagIcon, CarIcon, GiftIcon, HomeIcon, MarketIcon } from "../utils/CustomIcon";
 import Link from "next/link";
-import { defaultAvatarImage, listTypeAccount } from "../common/user";
+import { defaultAvatarImage } from "../common/user";
 import { linkImage } from "../features/Image";
 import { getCookie, setCookie } from "cookies-next";
 import { useQuery } from "@tanstack/react-query";
-import { getDetailUser } from "../features/users/userAPI";
-import { useRouter } from "next/router";
+import { getDetailUser } from "../features/users/userAPI"; 
 import { listTypePost } from "../common/post";
-export { Header };
+
 const navItems = [
   {
     id: 1,
@@ -28,7 +26,7 @@ const navItems = [
     id: 51,
     text: "Cộng đồng",
     icon: <PublicIcon />,
-    url: '/'
+    url: '#'
   },
   {
     id: 52,
@@ -40,7 +38,7 @@ const navItems = [
     id: 53,
     text: "Thông báo",
     icon: <NotificationsOutlinedIcon />,
-    url: '/'
+    url: '#'
   },
 ];
 
@@ -60,26 +58,25 @@ const subNavItems = [
   {
     id: 25,
     text: "công việc",
-    icon: <GiftIcon sx={{ fontSize: "16px" }} />,
+    icon: <BagIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
     id: 35,
     text: "Chỗ ở",
-    icon: <GiftIcon sx={{ fontSize: "16px" }} />,
+    icon: <HomeIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
   {
     id: 3,
     text: "Chợ yêu thương",
-    icon: <GiftIcon sx={{ fontSize: "16px" }} />,
+    icon: <MarketIcon sx={{ fontSize: "16px" }} />,
     url: '/'
   },
-];
+]; 
 
-function Header({isShowSubBar=true, isChange=false, handleChange}) {
-  const router = useRouter()
-  const [isNavBarActive, setIsNavBarActive] = useState(1);
+function Header({isShowSubBar=true, isChange=false, handleChange, type}) { 
+  const [isNavBarActive, setIsNavBarActive] = useState(type || 1);
   const infoUserString = getCookie('auth')
   let infoUser = infoUserString ? JSON.parse(infoUserString) : {};
     
@@ -98,8 +95,7 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
     }
   },[data])
  
-  const handleClickNavBarItem = (e,val) => {
-    setIsNavBarActive(val * 1);
+  const handleClickNavBarItem = (e,val) => {  
     const acc =  listTypePost.find(e => e.id === val*1) ;
     const accClone = {...acc}
     if(val*1 === 1){
@@ -119,7 +115,8 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
     if(val*1 < 50 && typeof(handleChange) ==='function'){
       handleChange(accClone);
     }
-  };
+    setIsNavBarActive(val);  
+  };  
   return (
     <>
      <Box sx={{position:"fixed", top: '0', right: '0', left: '0', zIndex: '99'}}>
@@ -137,12 +134,10 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
               },
               "::-webkit-scrollbar": { display: "none" },
             }}
-          > 
-
+          >  
             <Box sx={{ display: "flex", gap: 2 }}>
               {infoUserString && infoUserString?.length > 0 ? (
                 <>
-                  {/* { infoUser?.name[0]} */}
                   <Box>
                     <Avatar sx={{ width: "34px", height: "34px", border: '1px solid rgb(221, 221, 221)' }}>
                       <img
@@ -197,14 +192,12 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
                 </Box>
               )}
             </Box>
-            <Box sx={{ display: { xs: "none", sm: "flex" } }}>
-              {navItems.map((item) => (
+            <Box sx={{ display:  "flex" }}>
+              {navItems.map((item) => { 
+                return  (
                 <Link href={item.url} key={item.id}>
                   <Button
                     id={item.id}
-                    className={
-                      isNavBarActive === item.id ? "isActiveNavBar" : ""
-                    }
                     onClick={(e) => handleClickNavBarItem(e,item.id)}
                     startIcon={item.icon}
                     style={{
@@ -215,11 +208,14 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
                       marginInline: "8px",
                       fontSize: "10px",
                     }}
+                    className={
+                      isNavBarActive === item?.id ? "isActiveNavBar" : ""
+                    }
                   >
                     {item.text}
-                  </Button>
-                </Link>
-              ))}
+                  </Button> 
+                </Link> )
+              })}
             </Box>
           </Box>
         </Container>
@@ -271,4 +267,5 @@ function Header({isShowSubBar=true, isChange=false, handleChange}) {
     </>
    
   );
-}
+} 
+export { Header };

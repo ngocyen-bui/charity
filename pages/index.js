@@ -14,6 +14,8 @@ import moment from "moment";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { news } from "../common/post";
+import { RenderModalFilterPost } from "../components/ModalFilterPost";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     border: `2px solid #red`,
@@ -22,36 +24,74 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     color: 'white'
   },
 }));
-// let sortedBy = `[{"key":"STARTED_AT","reverse":false}]`
-// let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
+let sortedBy = `[{"key":"STARTED_AT","reverse":false}]`
+let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
 
 const filterFormat = (filter) => {
+
   return "?" + new URLSearchParams(JSON.parse(JSON.stringify(filter))).toString();
 } 
 
+const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
 export default function Home() {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const {page,categoryId} = router.query; 
   const [state, setState] = useState([]); 
   const [valueSearch, setValueSearch] = useState("");
   const [filterWithType,setFilterWithType] = useState()
   const [loadMore, setLoadMore] = useState(false);  
-  const [typePost,setTypePost] = useState(news) 
+  const [openModalFilter,setOpenModalFilter] = useState(false)
+  const [filterModal,setFilterModal] = useState(JSON.parse(JSON.stringify({
+    cityId: router.cityId || undefined,
+    districtId: router.districtId || undefined,
+    sortedBy: router.sortedBy || undefined
+  })))
+  const [end,setEnd] = useState(false)
+
+
+  const [typePost, setTypePost] = useState({
+    ...news,
+    children: [
+      {
+        categoryId: 1,
+        type: 2,
+        text: "Tổ chức",
+      },
+      {
+        categoryId: 1,
+        type: 3,
+        text: "Mạnh thường quân",
+      },
+    ],
+  });  
   const [filter,setFilter] = useState({
     memberTypes: `[${[2,3].join(',')}]`,
     types: `[1]`,
     categoryId: 1,
-    page: 1,
-    size: 12,
-  });
+    page: page || 1,
+    size: 12,  
+    ...router.query,
+  });   
+
+  const initFilter = {   
+    page: page || 1,
+    size: 12,   
+  }
+  useEffect(()=>{
+    setFilter({
+      ...filter
+    }) 
+  },[router.query,filterModal])
 
   const handleMouseDown =(event)=>{
     event.preventDefault(); 
   }
   const handleSetSearchValue = (e)=>{
     setValueSearch(e.target.value);
-  }
+  } 
   const handleSearchListPost= ()=>{
-    if(valueSearch){ 
+    if(valueSearch && categoryId*1 === 1){ 
         reloadData({
         ...filter,
         page: 1, 
@@ -61,6 +101,18 @@ export default function Home() {
         ...filter,
         page: 1, 
         creatorName: valueSearch, 
+      })
+    }else if(valueSearch && categoryId*1 !== 1){
+      delete filter.creatorName;
+      reloadData({
+        ...filter,
+        page: 1, 
+        title: valueSearch, 
+      })
+      setFilter({
+        ...filter,
+        page: 1, 
+        title: valueSearch, 
       })
     }else {
       delete filter.creatorName;
@@ -73,7 +125,9 @@ export default function Home() {
   }
   const handleClearSearchListPost= ()=>{
     setValueSearch('');
+    setEnd(false)
     delete filter.creatorName;
+    delete filter.title;
     reloadData({
       ...filter, 
       page: 1
@@ -83,39 +137,59 @@ export default function Home() {
       page: 1
     })
   }   
-  const reloadData = (filter)=>{  
-    setState([]) 
-    setTimeout(()=>{
-      getListPost({filter: filterFormat({...filter})}).then(
-        res => setState(res?.data?.data)
-      )
+  const handleSearchWithModal = (value)=>{   
+    let result = JSON.parse(JSON.stringify({...value}));
+    if(value.sortedBy === 1){
+      result.sortedBy = sortedByReverse
+    }else if(value.sortedBy === 2){
+      result.sortedBy = sortedBy
+    }  
+    reloadData({
+      ...filter, 
+      ...result,
+      page: 1
     })
-    router.replace(`/${filterFormat({...filter,page: undefined})}`)
+    setFilter({
+      ...filter, 
+      ...result,
+      page: 1
+    })
+    setFilterModal(JSON.parse(JSON.stringify({...value})));
+  }
+  const reloadData = (filter)=>{  
+    setState([])  
+    getListPost({filter: filterFormat({...filter, })}).then(
+      res => setState(res?.data?.data)
+    )
+    setFilter({...filter,}); 
+    router.replace({pathname: `/`, query: {...filter,}}, `/${filterFormat({...filter,})}`,{shallow: true})
   } 
   const handleClickTypeExtraPost =(value)=>{    
     delete filter.memberTypes;
     delete filter.types; 
+    delete filter.title; 
+    setEnd(false)
     if(value.categoryId === 1){
       if(filterWithType && filterWithType === value?.type) {
         delete filter.type; 
         setFilterWithType()
         reloadData({
           ...filter,  
-          page: 1, 
+          page: 1,
           isAvailable: 1
         })
         setFilter({
           ...filter, 
           type: value?.type, 
-          page: 1, 
+          page: 1,
           isAvailable: 1
         })
       }else{
         setFilterWithType(value.type) 
         reloadData({
-          ...filter, 
+          ...filter,  
           memberTypes: `[${value.type}]`,
-          page: 1, 
+          page: 1,
           isAvailable: 1
         })
       }
@@ -124,13 +198,13 @@ export default function Home() {
       setFilterWithType()
       reloadData({
         ...filter,  
-        page: 1, 
+        page: 1,
         isAvailable: 1
       })
       setFilter({
         ...filter, 
+        page: 1,
         type: value?.type, 
-        page: 1, 
         isAvailable: 1
       })
     }else{
@@ -144,13 +218,21 @@ export default function Home() {
     }
   } 
   const handleFilter = (val)=>{   
+    setEnd(false)
     setTypePost(val)
-    setFilterWithType()
+    setFilterWithType(); 
+    setFilterModal({})
+    setValueSearch('');
     delete filter.memberTypes;
     delete filter.types;
     delete filter.type;
-    if(val?.id === 1){
+    delete filter.sortedBy;
+    delete filter.districtId;
+    delete filter.title; 
+    delete filter.cityId;
+    if(val?.id === 1){ 
       reloadData({
+        ...initFilter,
         ...filter,
         memberTypes: `[${[2,3].join(',')}]`,
         page: 1,
@@ -158,7 +240,7 @@ export default function Home() {
       })
     }else{
           reloadData({
-        ...filter,
+        ...initFilter,
         // memberTypes: `[${[2,3].join(',')}]`,
         page: 1,
         categoryId: val?.id,
@@ -173,6 +255,19 @@ export default function Home() {
       isAvailable: 1
     })
   } 
+  const handleModalFilterOpen = ()=>{
+    setOpenModalFilter(true)
+  }
+  const handleCloseModalFilter = ()=>{
+    setOpenModalFilter(false)
+  }
+  const handleClearFilterModel = ()=>{
+    delete filter.sortedBy;
+    delete filter.districtId;
+    delete filter.cityId;
+    reloadData(filter)
+  }
+  
   return (
     <>
       <Header handleChange={handleFilter}/>
@@ -184,7 +279,7 @@ export default function Home() {
               fullWidth
               sx={{height: '30px', paddingRight: 0}}
               size="small"
-              placeholder="Tên tổ chức / Mạnh thường quân"
+              placeholder={categoryId*1 === 1 ?"Tên tổ chức / Mạnh thường quân": 'Tiêu đề'}
               value={valueSearch}
               onChange={handleSetSearchValue}
               InputProps={{
@@ -198,8 +293,8 @@ export default function Home() {
             />
           </Grid>
             <Grid item xs={2}>
-            <BootstrapButton variant="contained" sx={{background: 'white', minWidth: 0, width: '50px', marginTop: 0}}>
-                <StyledBadge badgeContent={0} color="success">
+            <BootstrapButton onClick={handleModalFilterOpen} variant="contained" sx={{background: 'white', minWidth: 0, width: '50px', marginTop: 0}}>
+                <StyledBadge badgeContent={objectLength(filterModal)} color="success">
                         <FilterAltIcon sx={{color: 'black'}} />
                       </StyledBadge>
               </BootstrapButton>
@@ -224,8 +319,9 @@ export default function Home() {
         </Box>  
         </Box>
           <Box className="wrapper-list-post">
-              <Infinity  state={state} setState={setState} filter={filter} loadMore={loadMore} setLoadMore={setLoadMore}/>
+              <Infinity end={end} setEnd={setEnd} state={state} setState={setState} filter={filter} loadMore={loadMore} setLoadMore={setLoadMore}/>
           </Box>
+          <RenderModalFilterPost  filter={filterModal} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter}/>
       </Container>
     </>
   );
@@ -234,15 +330,16 @@ export default function Home() {
 
 const Infinity = (props) => {
   const router = useRouter()
-  const { filter,loadMore,setLoadMore }= props;
-  const dataPost = props?.state;
- 
+  const { filter,loadMore,setLoadMore, end, setEnd } = props;
+  const dataPost = props?.state; 
   const handleClickDetailPost = (id)=>{
     router.push(`/gift/${id}`)
   }
 
   useEffect(() => {  
+    // if(props.state?.length > 0){
       getData(loadMore); 
+    // } 
   }, [loadMore]);
 
   useEffect(() => {
@@ -262,19 +359,27 @@ const Infinity = (props) => {
       });
     } 
   }, []);
-  useEffect(() => {
-    const list = document.getElementById('listPost');
 
+  useEffect(() => {
+    const list = document.getElementById('listPost'); 
     if(list.clientHeight <= window.innerHeight && list.clientHeight) {
       setLoadMore(true);
     }
   }, [props.state]);
 
   const getData = (load) => {
-    if (load) {
-      getListPost({filter: filterFormat({...filter,page:filter.page++})})
+    console.log(load,end)
+    if (load && !end) {  
+      if(props?.state?.length !== 0){
+        filter.page++;
+      }
+      getListPost({filter: filterFormat({...filter,page: filter.page})})
       .then(res => { 
         props.setState([...props.state, ...res?.data?.data]);
+        if(res?.data?.data?.length === 0 || res?.data?.data?.length < 12){
+          setEnd(true)
+        } 
+        router.replace({pathname: `/`, query: filter}, `/${filterFormat({...filter})}`,{shallow: true})
         setLoadMore(false);
       }) 
     }
@@ -399,7 +504,7 @@ const Infinity = (props) => {
               size="small"
               disabled
             >
-              Bạn đã xem đến cuối danh sách
+              {end ? 'Bạn đã xem đến cuối danh sách': 'Loading more ...'}
             </Button>
           </Box>
         </Grid>
