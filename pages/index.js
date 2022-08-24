@@ -15,8 +15,8 @@ import queryString from 'query-string'
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { news } from "../common/post";
-import { RenderModalFilterPost } from "../components/ModalFilterPost";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; 
+import { RenderModalFilterPost } from "../components/ModalFilterPost"; 
+import _ from "lodash"
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     border: `2px solid #red`,
@@ -32,8 +32,8 @@ const defaultPagination = {
   page: 1,
   size: 12
 }
-const filterFormat = (filter) => { 
-  return "?" + new URLSearchParams(JSON.parse(JSON.stringify(filter))).toString();
+const cleanFilter = (filter) => { 
+  return  _.pickBy(filter, v => v !== null && v !== undefined && v !== "");
 } 
 
 const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
@@ -67,8 +67,7 @@ export default function Home() {
       },
     ],
   });   
-
-  const [filter,setFilter] = useState({});   
+ 
 
   
   const queryParams = useMemo(() => {
@@ -107,13 +106,7 @@ export default function Home() {
         title: valueSearch 
       })
     }
-  }
-  useEffect(()=>{
-    handleFilterChange({
-      categoryId: 1,
-      memberTypes: `[${[2,3].join(',')}]`
-    })
-  },[])
+  } 
   const handleFilterChange = (newFilter) => {
     if(newFilter.categoryId === 1){
        queryParams. memberTypes = `[${[2,3].join(',')}]`
@@ -215,6 +208,9 @@ export default function Home() {
       }
     } 
     handleFilterChange(result)
+    const obj = { a: undefined, b: 123, c: true, d: '', e: null};
+
+ 
   } 
   const handleModalFilterOpen = ()=>{
     setOpenModalFilter(true)
@@ -329,15 +325,15 @@ const Infinity = (props) => {
         filter.page++;
       }
       handleFilterChange(filter)
-      getListPost({filter: queryString.stringify(filter)})
-      .then(res => { 
-        props.setState([...props.state, ...res?.data?.data]);
-        if(res?.data?.data?.length === 0 || res?.data?.data?.length < 12){
-          setEnd(true)
-        } 
-        router.replace({pathname: `/`, query: queryString.parse(queryString.stringify(filter))}, `/${queryString.stringify(filter)}`,{shallow: true})
-        setLoadMore(false);
-      }) 
+      // getListPost({filter: queryString.stringify(cleanFilter(filter))})
+      // .then(res => { 
+      //   props.setState([...props.state, ...res?.data?.data]);
+      //   if(res?.data?.data?.length === 0 || res?.data?.data?.length < 12){
+      //     setEnd(true)
+      //   } 
+      //   router.replace({pathname: `/`, query: cleanFilter(filter)}, `/${queryString.stringify(filter)}`,{shallow: true})
+      //   setLoadMore(false);
+      // }) 
     }
   };
   if(!props.state){
