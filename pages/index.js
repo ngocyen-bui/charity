@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import { news } from "../common/post";
 import { RenderModalFilterPost } from "../components/ModalFilterPost"; 
 import _ from "lodash"
+import { useQuery } from "@tanstack/react-query";
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     border: `2px solid #red`,
@@ -51,7 +52,13 @@ export default function Home() {
     sortedBy: router.sortedBy || undefined
   })))
   const [end,setEnd] = useState(false)
- 
+  const initFilter = {
+    categoryId: 1,
+    ...defaultPagination,
+  }
+
+  const [queryParams, setQueryParams] = useState(initFilter)
+
   const [typePost, setTypePost] = useState({
     ...news,
     children: [
@@ -67,10 +74,9 @@ export default function Home() {
       },
     ],
   });   
- 
-
-  
-  const queryParams = useMemo(() => {
+  const {data, isFetching} = useQuery(['listPost',queryParams], ()=> getListPost(queryParams))
+  console.log(data)
+  const queryParamsx = useMemo(() => {
     const params = router.query;
     const {
       id,  
@@ -101,14 +107,14 @@ export default function Home() {
       handleFilterChange({
         creatorName: valueSearch 
       })
-    } else  if(valueSearch && queryParams.categoryId !== 1){
+    } else if(valueSearch && queryParams.categoryId !== 1){
       handleFilterChange({
         title: valueSearch 
       })
     }
   } 
   const handleFilterChange = (newFilter) => {
-    if(newFilter.categoryId === 1){
+    if(newFilter.categoryId*1 === 1){
        queryParams. memberTypes = `[${[2,3].join(',')}]`
     }
     if(newFilter.categoryId !== 1){
@@ -147,14 +153,14 @@ export default function Home() {
     } 
   }   
   const handleSearchWithModal = (value)=>{   
-    let result = JSON.parse(JSON.stringify({...value}));
+    let result = cleanFilter({...value})
     if(value.sortedBy === 1){
       result.sortedBy = sortedByReverse
     }else if(value.sortedBy === 2){
       result.sortedBy = sortedBy
     }  
     handleFilterChange(result)
-    setFilterModal(JSON.parse(JSON.stringify({...value})));
+    setFilterModal(result);
   }
  
   const handleClickTypeExtraPost =(value)=>{
@@ -164,7 +170,6 @@ export default function Home() {
       if(filterWithType && filterWithType === value?.type) { 
         setFilterWithType()
         result =  { 
-          categoryId: 1,
           memberTypes: undefined,
           type: undefined, 
           isAvailable: undefined
@@ -199,16 +204,19 @@ export default function Home() {
     setFilterModal({})
     setValueSearch(''); 
     let result = {
-        categoryId: val?.id*1, 
+        creatorName: undefined,
+        title: undefined,
+        type: undefined, 
+        categoryId: val?.id, 
     }
     if(val?.id !== 1){ 
       result = { 
         ...result,
+        type: undefined, 
         isAvailable: 1
       }
     } 
-    handleFilterChange(result)
-    const obj = { a: undefined, b: 123, c: true, d: '', e: null};
+    handleFilterChange(result) 
 
  
   } 

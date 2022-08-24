@@ -6,7 +6,7 @@ const url = (id)=> {
     return `https://dev-charity.estuary.solutions/_next/data/kEBwHlXdjRVTVjjJzdAb3/gift/${id}.json?slug=${id}`
 }
 const getListPost = ({filter})=>{
-    return axiosClient.get(`posts?${filter}`)
+    return axiosClient.get(`posts?${filter}`).then(res => res?.data?.data?.data)
 }
 
 const createPost = ({data}) => {
