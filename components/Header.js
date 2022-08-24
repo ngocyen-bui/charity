@@ -112,7 +112,7 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
     }
       ]
     }
-    if(val*1 < 50 && typeof(handleChange) ==='function'){
+    if(val*1 < 50 && typeof(handleChange) ==='function'){  
       handleChange(accClone);
     }
     setIsNavBarActive(val);  
