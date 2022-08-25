@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Button, Chip, Container, Grid, IconButton, InputAdornment, Paper, Stack, Typography } from "@mui/material";
-import { Header } from "../components"; 
+import { Header } from "../components";
 import { BootstrapButton, CssTextField } from "../utils";
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -8,16 +8,16 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CloseIcon from '@mui/icons-material/Close';
 import { getListPost } from "../features/users/postAPI";
 import { useEffect, useMemo, useState } from "react";
-import { defaultAvatarImage, defaultImage, listTypeAccount } from "../common/user"; 
+import { defaultAvatarImage, defaultImage, listTypeAccount } from "../common/user";
 import { linkImage } from "../features/Image";
 import moment from "moment";
-import queryString from 'query-string' 
+import queryString from 'query-string'
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { news } from "../common/post";
-import { RenderModalFilterPost } from "../components/ModalFilterPost"; 
+import { news,listTypePost } from "../common/post";
+import { RenderModalFilterPost } from "../components/ModalFilterPost";
 import _ from "lodash"
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     border: `2px solid #red`,
@@ -33,32 +33,34 @@ const defaultPagination = {
   page: 1,
   size: 12
 }
-const cleanFilter = (filter) => { 
-  return  _.pickBy(filter, v => v !== null && v !== undefined && v !== "");
-} 
+const cleanFilter = (filter) => {
+  return _.pickBy(filter, v => v !== null && v !== undefined && v !== "");
+}
 
 const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
 export default function Home() {
-  const router = useRouter() 
-  const {page,categoryId} = router.query; 
-  const [state, setState] = useState([]); 
+  const router = useRouter()
+  const { type, categoryId,memberTypes,sortedBy,cityId } = router.query;
+  const queryClient = useQueryClient()
   const [valueSearch, setValueSearch] = useState("");
-  const [filterWithType,setFilterWithType] = useState()
-  const [loadMore, setLoadMore] = useState(false);  
-  const [openModalFilter,setOpenModalFilter] = useState(false)
-  const [filterModal,setFilterModal] = useState(JSON.parse(JSON.stringify({
-    cityId: router.cityId || undefined,
-    districtId: router.districtId || undefined,
-    sortedBy: router.sortedBy || undefined
-  })))
-  const [end,setEnd] = useState(false)
+  const [filterWithType, setFilterWithType] = useState(type*1)
+  const [loadMore, setLoadMore] = useState(false);
+  const [openModalFilter, setOpenModalFilter] = useState(false)
+  const [filterModal, setFilterModal] = useState({
+    cityId:  undefined,
+    districtId:  undefined,
+    sortedBy:  undefined
+  })
+  const [end, setEnd] = useState(false)
   const initFilter = {
-    categoryId: 1,
+    categoryId: categoryId || 1,
+    memberTypes: memberTypes ||`[${[2, 3].join(',')}]`, 
+    type: type || undefined,
+    ...filterModal,
     ...defaultPagination,
   }
 
   const [queryParams, setQueryParams] = useState(initFilter)
-
   const [typePost, setTypePost] = useState({
     ...news,
     children: [
@@ -73,217 +75,247 @@ export default function Home() {
         text: "Mạnh thường quân",
       },
     ],
-  });   
-  const {data, isFetching} = useQuery(['listPost',queryParams], ()=> getListPost(queryParams))
-  console.log(data)
-  const queryParamsx = useMemo(() => {
-    const params = router.query;
-    const {
-      id,  
-      types,
-      type,
-      categoryId,
-      size, 
-      memberTypes
-    } = params
-    return {
-      ...params, 
-      type: type ? Number(type) : undefined,
-      categoryId: categoryId ? Number(categoryId) : 1, 
-      page: page ? Number(page) : defaultPagination.page, 
-      size: size ? Number(size)  : defaultPagination.size, 
+  });  
+
+
+  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId], () => getListPost({ filter: queryString.stringify(queryParams) }), { enabled: ((queryParams.page*1 || 1)  === 1 ) }); 
+  useEffect(() => {
+    if(state && state?.data?.data?.length < 12) {
+      setEnd(true)
+    }
+  },[state])
+  const mutation = useMutation(getListPost, {
+    onSuccess: (newData) => {
+      setLoadMore(false)
+      queryClient.setQueryData(['listPost', categoryId,type,memberTypes,sortedBy,cityId], (oldData) => {
+        const result = {}
+        let oldDataArr = oldData?.data?.data;
+        let newDataArr = newData?.data?.data;  
+        if(oldDataArr?.length < 12 || newDataArr?.length < 12) setEnd(true); 
+        console.log(oldDataArr?.length < 12 , newDataArr?.length < 12)
+        result = { ...newData, data: {  ...newData?.data ,data: [...oldDataArr, ...newDataArr] } }
+        return result
+      })
+    },
+    onError: () => {
+      setLoadMore(false);
+    }
+  })
+  useEffect(() => {
+    if(categoryId){
+      let result = listTypePost.find(e => e.id === categoryId*1)
+      if(categoryId*1 === 1){
+        result = {
+          ...result,
+          children: [
+            {
+              categoryId: 1,
+              type: 2,
+              text: "Tổ chức",
+            },
+            {
+              categoryId: 1,
+              type: 3,
+              text: "Mạnh thường quân",
+            },
+          ],
+        }
+      }
+      setTypePost(result)
     } 
-  }, [router.query])
-
-
-  const handleMouseDown =(event)=>{
-    event.preventDefault(); 
+  },[categoryId]) 
+  const handleMouseDown = (event) => {
+    event.preventDefault();
   }
-  const handleSetSearchValue = (e)=>{
+  const handleSetSearchValue = (e) => {
     setValueSearch(e.target.value);
-  } 
-  const handleSearchListPost= ()=>{
-    if(valueSearch && queryParams.categoryId === 1){
+  }
+  const handleSearchListPost = () => {
+    if (valueSearch && queryParams.categoryId === 1) {
       handleFilterChange({
-        creatorName: valueSearch 
+        creatorName: valueSearch
       })
-    } else if(valueSearch && queryParams.categoryId !== 1){
+    } else if (valueSearch && queryParams.categoryId !== 1) {
       handleFilterChange({
-        title: valueSearch 
+        title: valueSearch
       })
     }
-  } 
+  }
   const handleFilterChange = (newFilter) => {
-    if(newFilter.categoryId*1 === 1){
-       queryParams. memberTypes = `[${[2,3].join(',')}]`
+    if (newFilter.categoryId * 1 === 1 && !newFilter.memberTypes) {
+      queryParams.memberTypes = `[${[2, 3].join(',')}]`
     }
-    if(newFilter.categoryId !== 1){
-      queryParams. memberTypes = undefined
+    if (newFilter.categoryId !== 1) {
+      queryParams.memberTypes = undefined
       queryParams.creatorName = undefined
     }
     const filter = {
       ...queryParams,
       ...newFilter,
-    }  
+    }
+    setFilterModal({
+      cityId: filter.cityId || undefined,
+      districtId: filter.districtId || undefined,
+      sortedBy: filter.sortedBy || undefined, 
+    })
+    if (newFilter.sortedBy === 1) {
+      filter.sortedBy = sortedByReverse
+    } else if (newFilter.sortedBy === 2) {
+      filter.sortedBy = sortedBy
+    }
     if (!newFilter?.page) {
       filter.page = defaultPagination.page
-    } 
-    setState([]);
-    getListPost({filter: queryString.stringify(filter)}).then(
-      res => {
-        if(res?.data?.data?.length < 10){
-          setEnd(true)
-        }
-        setState(res?.data?.data)
-      }
-    )
-    router.replace({pathname: `/`, query: filter}, `/?${queryString.stringify(filter)}`,{shallow: true})
+    }  
+    setEnd(false)
+    setQueryParams(filter)
+    router.replace({ pathname: `/`, query: filter }, `/?${queryString.stringify(filter)}`, { shallow: true })
   }
 
-  const handleClearSearchListPost= ()=>{
-    setValueSearch(""); 
-    if( queryParams.categoryId === 1){
+  const handleClearSearchListPost = () => {
+    
+    setValueSearch("");
+    if (queryParams.categoryId*1 === 1) {
       handleFilterChange({
         creatorName: undefined
       })
-    } else  if(queryParams.categoryId !== 1){
+    } else if (queryParams.categoryId*1 !== 1) {
       handleFilterChange({
-        title: undefined 
+        title: undefined
       })
-    } 
-  }   
-  const handleSearchWithModal = (value)=>{   
-    let result = cleanFilter({...value})
-    if(value.sortedBy === 1){
-      result.sortedBy = sortedByReverse
-    }else if(value.sortedBy === 2){
-      result.sortedBy = sortedBy
-    }  
-    handleFilterChange(result)
-    setFilterModal(result);
+    }
   }
- 
-  const handleClickTypeExtraPost =(value)=>{
+
+  const handleClickTypeExtraPost = (value) => {
     setEnd(false)
     let result = {}
-    if(value.categoryId === 1){
-      if(filterWithType && filterWithType === value?.type) { 
+    if (value.categoryId === 1) {
+      if (filterWithType && filterWithType === value?.type) {
         setFilterWithType()
-        result =  { 
+        result = {
           memberTypes: undefined,
           type: undefined, 
           isAvailable: undefined
-        } 
-      }else{
-        setFilterWithType(value.type) 
-        result =  { 
+        }
+      } else {
+        setFilterWithType(value.type)
+        result = {
           categoryId: 1,
           memberTypes: `[${value.type}]`,
           isAvailable: undefined
-        }  
+        }
       }
-    } else if(filterWithType && filterWithType === value?.type) { 
+    } else if (filterWithType && filterWithType === value?.type) {
       setFilterWithType()
-      result =  { 
+      result = {
         type: undefined, 
         isAvailable: 1
-      }  
-    }else{
-      setFilterWithType(value.type)  
-      result =  { 
-        type: value?.type, 
-        isAvailable: 1  
-      }   
+      }
+    } else {
+      setFilterWithType(value.type*1)
+      result = { 
+        type: value?.type*1,
+        isAvailable: 1
+      }
     }
     handleFilterChange(result)
-  } 
-  const handleFilter = (val)=>{    
+  }
+  const handleFilter = (val) => {
     setEnd(false);
     setTypePost(val);
-    setFilterWithType(); 
+    setFilterWithType();
     setFilterModal({})
-    setValueSearch(''); 
+    setValueSearch('');
     let result = {
-        creatorName: undefined,
-        title: undefined,
-        type: undefined, 
-        categoryId: val?.id, 
+      creatorName: undefined,
+      title: undefined,
+      isAvailable: undefined,
+      type: undefined,
+      categoryId: val?.id,
     }
-    if(val?.id !== 1){ 
-      result = { 
-        ...result,
-        type: undefined, 
+    if (val?.id !== 1) {
+      result = {
+        ...result, 
+        type: undefined,
         isAvailable: 1
       }
-    } 
-    handleFilterChange(result) 
+    }
+    handleFilterChange(result)
 
- 
-  } 
-  const handleModalFilterOpen = ()=>{
+
+  }
+  const handleModalFilterOpen = () => {
     setOpenModalFilter(true)
   }
-  const handleCloseModalFilter = ()=>{
+  const handleCloseModalFilter = () => {
     setOpenModalFilter(false)
   }
-  const handleClearFilterModel = ()=>{ 
-     
+  const handleSearchWithModal = (value) => { 
+    handleFilterChange(value)
   }
-  
+  const handleClearFilterModel = () => {  
+    let result = {
+      sortedBy: undefined,
+      cityId: undefined,
+      districtId: undefined,
+    }
+    setFilterModal(result);
+    handleFilterChange(result)
+  }
+
   return (
     <>
-      <Header handleChange={handleFilter}/>
+      <Header handleChange={handleFilter} />
       <Container maxWidth="md">
         <Box sx={{ padding: "24px 0" }}>
           <Grid container spacing={2}>
-          <Grid item xs={10}>
-          <CssTextField
-              fullWidth
-              sx={{height: '30px', paddingRight: 0}}
-              size="small"
-              placeholder={categoryId*1 === 1 ?"Tên tổ chức / Mạnh thường quân": 'Tiêu đề'}
-              value={valueSearch}
-              onChange={handleSetSearchValue}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" >
-                    {valueSearch &&  <CloseIcon sx={{cursor: 'pointer'}} onMouseDown={handleMouseDown} onClick={handleClearSearchListPost}/>}
-                      <SearchIcon sx={{cursor: 'pointer'}} onMouseDown={handleMouseDown} onClick={handleSearchListPost}/>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
+            <Grid item xs={10}>
+              <CssTextField
+                fullWidth
+                sx={{ height: '30px', paddingRight: 0 }}
+                size="small"
+                placeholder={categoryId * 1 === 1 ? "Tên tổ chức / Mạnh thường quân" : 'Tiêu đề'}
+                value={valueSearch}
+                onChange={handleSetSearchValue}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="start" >
+                      {valueSearch && <CloseIcon sx={{ cursor: 'pointer' }} onMouseDown={handleMouseDown} onClick={handleClearSearchListPost} />}
+                      <SearchIcon sx={{ cursor: 'pointer' }} onMouseDown={handleMouseDown} onClick={handleSearchListPost} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
             <Grid item xs={2}>
-            <BootstrapButton onClick={handleModalFilterOpen} variant="contained" sx={{background: 'white', minWidth: 0, width: '50px', marginTop: 0}}>
+              <BootstrapButton onClick={handleModalFilterOpen} variant="contained" sx={{ background: 'white', minWidth: 0, width: '50px', marginTop: 0 }}>
                 <StyledBadge badgeContent={objectLength(filterModal)} color="success">
-                        <FilterAltIcon sx={{color: 'black'}} />
-                      </StyledBadge>
+                  <FilterAltIcon sx={{ color: 'black' }} />
+                </StyledBadge>
               </BootstrapButton>
-              <BootstrapButton variant="contained" sx={{background: 'white', minWidth: 0, width: '50px', marginLeft: '10px', marginTop: 0}}>
+              <BootstrapButton variant="contained" sx={{ background: 'white', minWidth: 0, width: '50px', marginLeft: '10px', marginTop: 0 }}>
                 <StyledBadge badgeContent={0} color="success">
-                        <LocationOnIcon sx={{color: 'black'}} />
-                      </StyledBadge>
+                  <LocationOnIcon sx={{ color: 'black' }} />
+                </StyledBadge>
               </BootstrapButton>
             </Grid>
-          
+
           </Grid>
-          <Box sx={{display: 'flex', gap: '10px'}}>
-            
+          <Box sx={{ display: 'flex', gap: '10px' }}>
+
             {typePost?.children?.map(e => {
-              return <BootstrapButton key={e?.type} onClick={() =>handleClickTypeExtraPost(e)} 
-              variant="contained" 
-              className={filterWithType === e?.type ? 'active-button' : ""} 
-              sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">
+              return <BootstrapButton key={e?.type} onClick={() => handleClickTypeExtraPost(e)}
+                variant="contained"
+                className={filterWithType === e?.type ? 'active-button' : ""}
+                sx={{ margin: "0", textTransform: 'initial', width: 'fit-content', lineHeight: '16px', background: 'white', color: 'black' }} size="small">
                 {e?.text}
-                </BootstrapButton>
-            })} 
-        </Box>  
-        </Box>
-          <Box className="wrapper-list-post">
-              <Infinity end={end} handleFilterChange={handleFilterChange} setEnd={setEnd} state={state} setState={setState} filter={{...queryParams}} loadMore={loadMore} setLoadMore={setLoadMore}/>
+              </BootstrapButton>
+            })}
           </Box>
-          <RenderModalFilterPost  filter={filterModal} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter}/>
+        </Box>
+        <Box className="wrapper-list-post">
+          <Infinity end={end} handleFilterChange={handleFilterChange} mutation={mutation} setEnd={setEnd} state={state} filter={queryParams} loadMore={loadMore} setLoadMore={setLoadMore} />
+        </Box>
+        <RenderModalFilterPost filter={filterModal} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter} />
       </Container>
     </>
   );
@@ -292,65 +324,59 @@ export default function Home() {
 
 const Infinity = (props) => {
   const router = useRouter()
-  const { loadMore,setLoadMore, end,filter,handleFilterChange } = props;
-  const dataPost = props?.state; 
-  const handleClickDetailPost = (id)=>{
+  const { loadMore, setLoadMore, end, filter, handleFilterChange, mutation } = props;
+  const dataPost = props?.state;
+  const handleClickDetailPost = (id) => {
     router.push(`/gift/${id}`)
   }
-  useEffect(() => {     
-    console.log(filter);
-      getData(loadMore);  
+  useEffect(() => {
+    getData(loadMore);
   }, [loadMore]);
 
   useEffect(() => {
-    const list = document.getElementById('listPost') 
-    if(props.scrollable) {   
+    const list = document.getElementById('listPost')
+    if (props.scrollable) {
       list.addEventListener('scroll', (e) => {
         const el = e.target;
-        if(el.scrollTop + el.clientHeight === el.scrollHeight) { 
+        if (el.scrollTop + el.clientHeight === el.scrollHeight) {
           setLoadMore(true);
         }
-      });  
-    } else {  
+      });
+    } else {
       window.addEventListener('scroll', () => {
         if (window.scrollY + window.innerHeight === list.clientHeight + list.offsetTop) {
+          console.log(loadMore)
           setLoadMore(true); 
         }
       });
-    } 
+    }
   }, []);
 
   useEffect(() => {
-    const list = document.getElementById('listPost'); 
-    if(list.clientHeight <= window.innerHeight && list.clientHeight && props?.state?.length > 0) {
-      setLoadMore(true); 
+    const list = document.getElementById('listPost');
+    if (list.clientHeight <= window.innerHeight && list.clientHeight && props?.state?.length > 0) {
+      setLoadMore(true);
     }
   }, [props.state]);
 
   const getData = (load) => { 
-    if (load && !end) {  
-      if(props?.state?.length !== 0){
-        filter.page++;
+    if (load && !end) {
+      const result = filter;
+      if (dataPost?.data?.data?.length !== 0) {
+        result.page = result.page += 1;
       }
-      handleFilterChange(filter)
-      // getListPost({filter: queryString.stringify(cleanFilter(filter))})
-      // .then(res => { 
-      //   props.setState([...props.state, ...res?.data?.data]);
-      //   if(res?.data?.data?.length === 0 || res?.data?.data?.length < 12){
-      //     setEnd(true)
-      //   } 
-      //   router.replace({pathname: `/`, query: cleanFilter(filter)}, `/${queryString.stringify(filter)}`,{shallow: true})
-      //   setLoadMore(false);
-      // }) 
+      console.log('330')
+      mutation.mutate({ filter: queryString.stringify(filter) });
+      handleFilterChange(result);
     }
   };
-  if(!props.state){
+  if (!props.state) {
     return <>Loadding</>
   }
   return (
     <>
       <Grid container spacing={1} id="listPost">
-        {dataPost?.map((e) => {
+        {dataPost?.data?.data?.map((e) => {
           const typeAccount = listTypeAccount.find(
             (t) => t.type * 1 === e?.creator?.type * 1
           );
@@ -450,7 +476,7 @@ const Infinity = (props) => {
             </Grid>
           );
         })}
-
+        {dataPost?.data?.data?.length === 0 && <Typography variant="h5" sx={{textAlign: "center", width: "100%"}} >Không tìn thấy dữ liệu phù hợp</Typography>}
         <Grid item xs={12}>
           <Box sx={{ textAlign: "center", paddingTop: "10px" }}>
             <Button
@@ -464,12 +490,12 @@ const Infinity = (props) => {
               size="small"
               disabled
             >
-              {end ? 'Bạn đã xem đến cuối danh sách': 'Loading more ...'}
+              {end ? 'Bạn đã xem đến cuối danh sách' : 'Loading more ...'}
             </Button>
           </Box>
         </Grid>
       </Grid>
     </>
   );
-    
+
 }

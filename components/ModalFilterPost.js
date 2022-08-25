@@ -77,10 +77,9 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
     handleClose(); 
   };
   const handleResetModal = ()=>{ 
+    clearFilter()
     setListDistrict([]);
     setFilter({})
-    clearFilter()
-    handleSearch({}) 
     formik.resetForm();
     handleClose();  
   }

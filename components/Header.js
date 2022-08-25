@@ -14,13 +14,14 @@ import { getCookie, setCookie } from "cookies-next";
 import { useQuery } from "@tanstack/react-query";
 import { getDetailUser } from "../features/users/userAPI"; 
 import { listTypePost } from "../common/post";
+import { useRouter } from "next/router";
 
 const navItems = [
   {
     id: 1,
     text: "Trang chủ",
     icon: <HomeOutlinedIcon />,
-    url: '/'
+    url: '/?categoryId=1&memberTypes=%5B2%2C3%5D&page=1&size=12'
   },
   {
     id: 51,
@@ -76,6 +77,8 @@ const subNavItems = [
 ]; 
 
 function Header({isShowSubBar=true, isChange=false, handleChange, type}) { 
+  const router = useRouter()
+  const {categoryId} = router.query; 
   const [isNavBarActive, setIsNavBarActive] = useState(type || 1);
   const infoUserString = getCookie('auth')
   let infoUser = infoUserString ? JSON.parse(infoUserString) : {};
@@ -94,7 +97,10 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
         setCookie('auth', auth)
     }
   },[data])
- 
+  useEffect(()=>{
+    setIsNavBarActive(categoryId*1)
+  },[categoryId])
+
   const handleClickNavBarItem = (e,val) => {  
     const acc =  listTypePost.find(e => e.id === val*1) ;
     const accClone = {...acc}
@@ -113,7 +119,7 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
       ]
     }
     if(val*1 < 50 && typeof(handleChange) ==='function'){  
-      handleChange(accClone);
+      setTimeout(() => handleChange(accClone))
     }
     setIsNavBarActive(val);  
   };  
