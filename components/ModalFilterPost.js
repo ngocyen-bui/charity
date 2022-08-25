@@ -7,7 +7,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { BootstrapButton } from "./../utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useQuery } from "@tanstack/react-query";
 import { CustomSelectAccommondation } from "./Accommondation";
@@ -15,9 +15,12 @@ import { getLocation } from "../features/location";
 import CloseIcon from "@mui/icons-material/Close";
 
 const sorted = [
-  { id: 1, key: "1", name: "Tin mới nhất" },
-  { id: 2, key: "2", name: "Tin cũ nhất" },
+  { id: 1, key: "1", name: "Tin mới nhất", text:`[{"key":"STARTED_AT","reverse":false}]` },
+  { id: 2, key: "2", name: "Tin cũ nhất", text: `[{"key":"STARTED_AT","reverse":true}]` },
 ];
+
+let sortedByNew = `[{"key":"STARTED_AT","reverse":false}]`
+let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
 
 export { RenderModalFilterPost, sorted };
 const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setFilter,clearFilter }) => { 
@@ -27,6 +30,14 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
     type: 3,
     allPage: true, 
   });
+  useEffect(()=>{  
+    // let result = sorted.find(e => e.text === filter.sortedBy); 
+    setListResult({
+      cityId: filter?.cityId,
+      districtId: filter?.districtId,
+    })  
+  },[filter])
+  
   const filterFormat = (filter) => {
     return (
       "?" + new URLSearchParams(JSON.parse(JSON.stringify(filter))).toString()

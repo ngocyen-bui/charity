@@ -28,11 +28,7 @@ const putPost = ({id,data}) => {
 }
 const getPost = ({id}) => {
     const token = getCookie('token'); 
-    return axiosClient.get(`posts/${id}`,{
-        headers: {
-            Authorization: "Bearer " + token
-        }
-    })
+    return axiosClient.get(`posts/${id}`)
 }
 const getPostJson = ({id}) => { 
     return axios.get(url(id));

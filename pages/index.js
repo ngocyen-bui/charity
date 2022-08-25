@@ -26,7 +26,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     color: 'white'
   },
 }));
-let sortedBy = `[{"key":"STARTED_AT","reverse":false}]`
+let sortedByNew = `[{"key":"STARTED_AT","reverse":false}]`
 let sortedByReverse = `[{"key":"STARTED_AT","reverse":true}]`
 
 const defaultPagination = {
@@ -40,23 +40,25 @@ const cleanFilter = (filter) => {
 const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
 export default function Home() {
   const router = useRouter()
-  const { type, categoryId,memberTypes,sortedBy,cityId } = router.query;
+  const { type, categoryId,memberTypes,sortedBy,cityId,districtId, title,creatorName } = router.query;
   const queryClient = useQueryClient()
   const [valueSearch, setValueSearch] = useState("");
   const [filterWithType, setFilterWithType] = useState(type*1)
   const [loadMore, setLoadMore] = useState(false);
   const [openModalFilter, setOpenModalFilter] = useState(false)
   const [filterModal, setFilterModal] = useState({
-    cityId:  undefined,
-    districtId:  undefined,
-    sortedBy:  undefined
+    cityId: cityId|| undefined,
+    districtId: districtId || undefined,
+    sortedBy: sortedBy || undefined
   })
   const [end, setEnd] = useState(false)
   const initFilter = {
     categoryId: categoryId || 1,
     memberTypes: memberTypes ||`[${[2, 3].join(',')}]`, 
-    type: type || undefined,
-    ...filterModal,
+    type: type || undefined, 
+    cityId: cityId|| undefined,
+    districtId: districtId || undefined,
+    sortedBy: sortedBy || "",
     ...defaultPagination,
   }
 
@@ -78,21 +80,31 @@ export default function Home() {
   });  
 
 
-  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId], () => getListPost({ filter: queryString.stringify(queryParams) }), { enabled: ((queryParams.page*1 || 1)  === 1 ) }); 
+  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId, title,creatorName], () => getListPost({ filter: queryString.stringify(cleanFilter(queryParams)) }), { enabled: ((queryParams.page*1 || 1)  === 1 ) }); 
   useEffect(() => {
     if(state && state?.data?.data?.length < 12) {
       setEnd(true)
     }
   },[state])
+
+  useEffect(()=>{
+    if(sortedBy || cityId || districtId){
+      setFilterModal({
+        cityId: cityId|| undefined,
+        districtId: districtId || undefined,
+        sortedBy: sortedBy || undefined
+      })
+    }
+
+  },[sortedBy,cityId,districtId])
   const mutation = useMutation(getListPost, {
     onSuccess: (newData) => {
       setLoadMore(false)
-      queryClient.setQueryData(['listPost', categoryId,type,memberTypes,sortedBy,cityId], (oldData) => {
+      queryClient.setQueryData(['listPost', categoryId,type,memberTypes,sortedBy,cityId,title,creatorName], (oldData) => {
         const result = {}
         let oldDataArr = oldData?.data?.data;
         let newDataArr = newData?.data?.data;  
         if(oldDataArr?.length < 12 || newDataArr?.length < 12) setEnd(true); 
-        console.log(oldDataArr?.length < 12 , newDataArr?.length < 12)
         result = { ...newData, data: {  ...newData?.data ,data: [...oldDataArr, ...newDataArr] } }
         return result
       })
@@ -101,6 +113,7 @@ export default function Home() {
       setLoadMore(false);
     }
   })
+  useEffect(()=> {setFilterWithType(type*1)},[type])
   useEffect(() => {
     if(categoryId){
       let result = listTypePost.find(e => e.id === categoryId*1)
@@ -121,9 +134,37 @@ export default function Home() {
           ],
         }
       }
-      setTypePost(result)
-    } 
+      setTypePost(result) 
+    }  
   },[categoryId]) 
+
+  const handleFilterChange = (newFilter) => {
+    if (newFilter.categoryId * 1 === 1 && !newFilter.memberTypes) {
+      queryParams.memberTypes = `[${[2, 3].join(',')}]`
+    }
+    if (newFilter.categoryId !== 1) {
+      queryParams.memberTypes = undefined
+      queryParams.creatorName = undefined 
+    }
+    const filter = {
+      ...queryParams,
+      ...newFilter,
+    }    
+    if (newFilter.sortedBy === 1) {
+      filter.sortedBy = sortedByReverse
+    } else if (newFilter.sortedBy === 2) {
+      filter.sortedBy = sortedByNew
+    }else {
+      filter.sortedBy = undefined
+    }
+    if (!newFilter?.page) {
+      filter.page = defaultPagination.page
+    }  
+    setEnd(false)
+    setQueryParams(filter)
+    router.replace({ pathname: `/`, query: filter }, `/?${queryString.stringify(filter)}`, { shallow: true })
+  }
+
   const handleMouseDown = (event) => {
     event.preventDefault();
   }
@@ -141,38 +182,7 @@ export default function Home() {
       })
     }
   }
-  const handleFilterChange = (newFilter) => {
-    if (newFilter.categoryId * 1 === 1 && !newFilter.memberTypes) {
-      queryParams.memberTypes = `[${[2, 3].join(',')}]`
-    }
-    if (newFilter.categoryId !== 1) {
-      queryParams.memberTypes = undefined
-      queryParams.creatorName = undefined
-    }
-    const filter = {
-      ...queryParams,
-      ...newFilter,
-    }
-    setFilterModal({
-      cityId: filter.cityId || undefined,
-      districtId: filter.districtId || undefined,
-      sortedBy: filter.sortedBy || undefined, 
-    })
-    if (newFilter.sortedBy === 1) {
-      filter.sortedBy = sortedByReverse
-    } else if (newFilter.sortedBy === 2) {
-      filter.sortedBy = sortedBy
-    }
-    if (!newFilter?.page) {
-      filter.page = defaultPagination.page
-    }  
-    setEnd(false)
-    setQueryParams(filter)
-    router.replace({ pathname: `/`, query: filter }, `/?${queryString.stringify(filter)}`, { shallow: true })
-  }
-
-  const handleClearSearchListPost = () => {
-    
+  const handleClearSearchListPost = () => { 
     setValueSearch("");
     if (queryParams.categoryId*1 === 1) {
       handleFilterChange({
@@ -187,6 +197,7 @@ export default function Home() {
 
   const handleClickTypeExtraPost = (value) => {
     setEnd(false)
+    console.log(value)
     let result = {}
     if (value.categoryId === 1) {
       if (filterWithType && filterWithType === value?.type) {
@@ -199,7 +210,7 @@ export default function Home() {
       } else {
         setFilterWithType(value.type)
         result = {
-          categoryId: 1,
+          categoryId: value.categoryId,
           memberTypes: `[${value.type}]`,
           isAvailable: undefined
         }
@@ -207,12 +218,14 @@ export default function Home() {
     } else if (filterWithType && filterWithType === value?.type) {
       setFilterWithType()
       result = {
+        categoryId: value.categoryId,
         type: undefined, 
         isAvailable: 1
       }
     } else {
       setFilterWithType(value.type*1)
       result = { 
+        categoryId: value.categoryId,
         type: value?.type*1,
         isAvailable: 1
       }
@@ -223,13 +236,20 @@ export default function Home() {
     setEnd(false);
     setTypePost(val);
     setFilterWithType();
-    setFilterModal({})
+    setFilterModal({
+      cityId: undefined,
+      districtId: undefined,
+      sortedBy: undefined
+    })
     setValueSearch('');
     let result = {
       creatorName: undefined,
       title: undefined,
       isAvailable: undefined,
       type: undefined,
+      cityId: undefined,
+      districtId: undefined,
+      sortedBy: undefined,
       categoryId: val?.id,
     }
     if (val?.id !== 1) {
@@ -315,7 +335,7 @@ export default function Home() {
         <Box className="wrapper-list-post">
           <Infinity end={end} handleFilterChange={handleFilterChange} mutation={mutation} setEnd={setEnd} state={state} filter={queryParams} loadMore={loadMore} setLoadMore={setLoadMore} />
         </Box>
-        <RenderModalFilterPost filter={filterModal} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter} />
+        <RenderModalFilterPost filter={queryParams} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter} />
       </Container>
     </>
   );
@@ -366,7 +386,7 @@ const Infinity = (props) => {
         result.page = result.page += 1;
       }
       console.log('330')
-      mutation.mutate({ filter: queryString.stringify(filter) });
+      mutation.mutate({ filter: queryString.stringify(cleanFilter(filter)) });
       handleFilterChange(result);
     }
   };
