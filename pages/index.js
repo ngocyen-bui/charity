@@ -40,7 +40,7 @@ const cleanFilter = (filter) => {
 const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
 export default function Home() {
   const router = useRouter()
-  const { type, categoryId,memberTypes,sortedBy,cityId,districtId, title,creatorName } = router.query;
+  const { type, categoryId,memberTypes,sortedBy,cityId,districtId,page,size, title,creatorName } = router.query;
   const queryClient = useQueryClient()
   const [valueSearch, setValueSearch] = useState("");
   const [filterWithType, setFilterWithType] = useState(type*1)
@@ -53,12 +53,14 @@ export default function Home() {
   })
   const [end, setEnd] = useState(false)
   const initFilter = {
-    categoryId: categoryId || 1,
+    categoryId: categoryId*1 || 1,
     memberTypes: memberTypes ||`[${[2, 3].join(',')}]`, 
     type: type || undefined, 
     cityId: cityId|| undefined,
     districtId: districtId || undefined,
     sortedBy: sortedBy || "",
+    page: page || defaultPagination.page,
+    size: size || defaultPagination.size,
     ...defaultPagination,
   }
 
@@ -100,14 +102,18 @@ export default function Home() {
   const mutation = useMutation(getListPost, {
     onSuccess: (newData) => {
       setLoadMore(false)
-      queryClient.setQueryData(['listPost', categoryId,type,memberTypes,sortedBy,cityId,title,creatorName], (oldData) => {
-        const result = {}
-        let oldDataArr = oldData?.data?.data;
-        let newDataArr = newData?.data?.data;  
-        if(oldDataArr?.length < 12 || newDataArr?.length < 12) setEnd(true); 
-        result = { ...newData, data: {  ...newData?.data ,data: [...oldDataArr, ...newDataArr] } }
-        return result
-      })
+      try {
+        queryClient.setQueryData(['listPost', categoryId,type,memberTypes,sortedBy,cityId,title,creatorName], (oldData) => {
+          const result = {}
+          let oldDataArr = oldData?.data?.data;
+          let newDataArr = newData?.data?.data; 
+          if(oldDataArr?.length < 12 || newDataArr?.length < 12) setEnd(true); 
+          result = { ...newData, data: {  ...newData?.data ,data: [...oldDataArr, ...newDataArr] } }
+          return result
+        })
+      } catch (error) {
+        console.log(error)
+      }
     },
     onError: () => {
       setLoadMore(false);
@@ -365,7 +371,6 @@ const Infinity = (props) => {
     } else {
       window.addEventListener('scroll', () => {
         if (window.scrollY + window.innerHeight === list.clientHeight + list.offsetTop) {
-          console.log(loadMore)
           setLoadMore(true); 
         }
       });
@@ -381,12 +386,11 @@ const Infinity = (props) => {
 
   const getData = (load) => { 
     if (load && !end) {
-      const result = filter;
+      const result = filter; 
       if (dataPost?.data?.data?.length !== 0) {
         result.page = result.page += 1;
       }
-      console.log('330')
-      mutation.mutate({ filter: queryString.stringify(cleanFilter(filter)) });
+      mutation.mutate({ filter: queryString.stringify(cleanFilter(result))});
       handleFilterChange(result);
     }
   };
