@@ -50,7 +50,7 @@ export default function Home() {
     cityId: cityId|| undefined,
     districtId: districtId || undefined,
     sortedBy: sortedBy || undefined
-  })
+  }) 
   const [end, setEnd] = useState(false)
   const initFilter = {
     categoryId: categoryId*1 || 1,
@@ -59,7 +59,7 @@ export default function Home() {
     cityId: cityId|| undefined,
     districtId: districtId || undefined,
     sortedBy: sortedBy || "",
-    page: page || defaultPagination.page,
+    page: defaultPagination.page,
     size: size || defaultPagination.size,
     ...defaultPagination,
   }
@@ -80,15 +80,15 @@ export default function Home() {
       },
     ],
   });  
+ 
 
-
-  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId, title,creatorName], () => getListPost({ filter: queryString.stringify(cleanFilter(queryParams)) }), { enabled: ((queryParams.page*1 || 1)  === 1 ) }); 
+  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId, title,creatorName], () => getListPost({ filter: queryString.stringify(cleanFilter(queryParams))})); 
   useEffect(() => {
     if(state && state?.data?.data?.length < 12) {
       setEnd(true)
     }
   },[state])
-
+ 
   useEffect(()=>{
     if(sortedBy || cityId || districtId){
       setFilterModal({
@@ -145,17 +145,19 @@ export default function Home() {
   },[categoryId]) 
 
   const handleFilterChange = (newFilter) => {
-    if (newFilter.categoryId * 1 === 1 && !newFilter.memberTypes) {
-      queryParams.memberTypes = `[${[2, 3].join(',')}]`
+    if (newFilter.categoryId * 1 === 1 && newFilter?.memberTypes === undefined) {
+      newFilter.memberTypes = `[${[2, 3].join(',')}]`
     }
-    if (newFilter.categoryId !== 1) {
+    if (newFilter.categoryId*1 !== 1) {
       queryParams.memberTypes = undefined
       queryParams.creatorName = undefined 
+    }else{
+      queryParams.isAvailable = undefined;
     }
     const filter = {
       ...queryParams,
       ...newFilter,
-    }    
+    }     
     if (newFilter.sortedBy === 1) {
       filter.sortedBy = sortedByReverse
     } else if (newFilter.sortedBy === 2) {
@@ -164,9 +166,11 @@ export default function Home() {
       filter.sortedBy = undefined
     }
     if (!newFilter?.page) {
-      filter.page = defaultPagination.page
-    }  
+      filter.page = defaultPagination.page,
+      filter.size = defaultPagination.size
+    }   
     setEnd(false)
+    setLoadMore(false)
     setQueryParams(filter)
     router.replace({ pathname: `/`, query: filter }, `/?${queryString.stringify(filter)}`, { shallow: true })
   }
@@ -202,14 +206,12 @@ export default function Home() {
   }
 
   const handleClickTypeExtraPost = (value) => {
-    setEnd(false)
-    console.log(value)
     let result = {}
     if (value.categoryId === 1) {
       if (filterWithType && filterWithType === value?.type) {
         setFilterWithType()
         result = {
-          memberTypes: undefined,
+          memberTypes: `[2,3]`,
           type: undefined, 
           isAvailable: undefined
         }
@@ -239,7 +241,6 @@ export default function Home() {
     handleFilterChange(result)
   }
   const handleFilter = (val) => {
-    setEnd(false);
     setTypePost(val);
     setFilterWithType();
     setFilterModal({
@@ -276,16 +277,19 @@ export default function Home() {
     setOpenModalFilter(false)
   }
   const handleSearchWithModal = (value) => { 
-    handleFilterChange(value)
+    handleFilterChange({
+      ...value,
+      categoryId: categoryId,
+    })
   }
   const handleClearFilterModel = () => {  
-    let result = {
+    let result = { 
       sortedBy: undefined,
       cityId: undefined,
       districtId: undefined,
     }
     setFilterModal(result);
-    handleFilterChange(result)
+    handleFilterChange({...result,categoryId: categoryId, isAvailable: 1})
   }
 
   return (
@@ -341,7 +345,7 @@ export default function Home() {
         <Box className="wrapper-list-post">
           <Infinity end={end} handleFilterChange={handleFilterChange} mutation={mutation} setEnd={setEnd} state={state} filter={queryParams} loadMore={loadMore} setLoadMore={setLoadMore} />
         </Box>
-        <RenderModalFilterPost filter={queryParams} setFilter={setFilterModal} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter} />
+        <RenderModalFilterPost filter={queryParams} setFilter={setQueryParams} handleSearch={handleSearchWithModal} clearFilter={handleClearFilterModel} isOpen={openModalFilter} handleClose={handleCloseModalFilter} />
       </Container>
     </>
   );
@@ -380,7 +384,7 @@ const Infinity = (props) => {
   useEffect(() => {
     const list = document.getElementById('listPost');
     if (list.clientHeight <= window.innerHeight && list.clientHeight && props?.state?.length > 0) {
-      setLoadMore(true);
+      setLoadMore(true); 
     }
   }, [props.state]);
 

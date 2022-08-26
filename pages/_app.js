@@ -16,7 +16,6 @@ const theme = createTheme({
     fontFamily: ["Nunito Sans", "Roboto", "sans-serif"].join(","),
   },
 });
-
 function MyApp({ Component, pageProps }) {
   
   const [queryClient] = React.useState(
