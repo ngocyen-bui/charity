@@ -40,7 +40,7 @@ const cleanFilter = (filter) => {
 const objectLength = obj => Object.entries(JSON.parse(JSON.stringify(obj))).length;
 export default function Home() {
   const router = useRouter()
-  const { type, categoryId,memberTypes,sortedBy,cityId,districtId,page,size, title,creatorName } = router.query;
+  const { type, categoryId,memberTypes,sortedBy,cityId,districtId,size, title,creatorName } = router.query;
   const queryClient = useQueryClient()
   const [valueSearch, setValueSearch] = useState("");
   const [filterWithType, setFilterWithType] = useState(type*1)
@@ -496,7 +496,7 @@ const Infinity = (props) => {
                     </Typography>
                     <Typography variant="body2">
                       {moment(e?.updatedAt).format("HH:mm - DD/MM/yyyy") +
-                        " - Toàn quốc"}
+                        " - "+ (e?.city?.name || 'Toàn quốc')}
                     </Typography>
                   </Box>
                 </Box>
@@ -504,7 +504,7 @@ const Infinity = (props) => {
             </Grid>
           );
         })}
-        {dataPost?.data?.data?.length === 0 && <Typography variant="h5" sx={{textAlign: "center", width: "100%"}} >Không tìn thấy dữ liệu phù hợp</Typography>}
+        {dataPost?.data?.data?.length === 0 && <Typography variant="h5" sx={{textAlign: "center", width: "100%"}} >Rất tiếc, chúng tôi không tìm thấy kết quả nào phù hợp</Typography>}
         <Grid item xs={12}>
           <Box sx={{ textAlign: "center", paddingTop: "10px" }}>
             <Button

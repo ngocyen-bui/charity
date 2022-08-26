@@ -262,7 +262,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                       </Typography>
                       <Typography variant="body2">
                         {moment(e?.updatedAt).format("HH:mm - DD/MM/yyyy") +
-                          " - Toàn quốc"}
+                          " - " + (e?.city?.name || 'Toàn quốc')}
                       </Typography>
                     </Box>
                   </Paper>
