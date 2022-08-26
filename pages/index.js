@@ -425,16 +425,19 @@ const Infinity = (props) => {
               >
                 <Box
                   sx={{
-                    // borderBottom: "1px solid #ddd",
+                    borderBottom: "1px solid #ddd",
+                    height: "220px",
                     borderRadius: "10px",
+                    background: "#000"
                   }}
                 >
                   <Image
                     src={linkImage(e?.images?.image || defaultImage)}
-                    width="340px"
-                    height="260px"
+                    width="277px"
+                    height="219px"
+                    layout="intrinsic"
                     objectFit="cover"
-                    style={{ borderRadius: "10px", borderBottom: "1px solid #ddd",}}
+                    style={{ borderRadius: "10px", borderBottom: "1px solid #ddd"}}
                     alt="Image"
                     onClick={() => handleClickDetailPost(e?.id)}
                   />

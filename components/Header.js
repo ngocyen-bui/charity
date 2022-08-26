@@ -226,6 +226,7 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
                 return  (
                   <Button
                     id={item.id}
+                    key={item.id}
                     onClick={(e) => handleClickNavBarItem(e,item.id)}
                     startIcon={item.icon}
                     style={{
@@ -318,9 +319,12 @@ const PopUpRequestLogin = ({openPopup, setOpenPopup})=>{
           onClose={handleClose}
         ></BootstrapDialogTitle>
         <DialogContent>
-          <img
+          <Box sx={{textAlign: 'center'}}>
+          <img 
+              style={{width: '100px', margin: '0 auto'}}
             src={"https://dev-charity.estuary.solutions/popupIcon.svg"}
           ></img>
+          </Box>
           <Typography variant="h6" align="center">
             Chào mừng đến với{" "}
           </Typography>
@@ -363,7 +367,7 @@ const BootstrapDialogTitle = (props) => {
             fontSize: '16px',
             right: 8,
             top: 8,
-            color: (theme) => theme.palette.grey[500],
+            color: '#f19e9e', 
           }}
         >
           Lúc khác
