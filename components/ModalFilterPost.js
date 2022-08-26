@@ -32,7 +32,6 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
   });
   useEffect(()=>{  
     let result = sorted.find(e => e.text === filter.sortedBy); 
-    console.log(result)
     setListResult({
       cityId: filter?.cityId,
       districtId: filter?.districtId,

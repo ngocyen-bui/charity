@@ -62,7 +62,7 @@ export default function Home() {
     page: defaultPagination.page,
     title: title || '',
     size: size || defaultPagination.size,
-    ...defaultPagination,
+    ...defaultPagination
   }
 
   const [queryParams, setQueryParams] = useState(initFilter)
@@ -146,13 +146,15 @@ export default function Home() {
   },[categoryId]) 
 
   const handleFilterChange = (newFilter) => {
+    console.log(newFilter)
     if (newFilter.categoryId * 1 === 1 && newFilter?.memberTypes === undefined) {
-      newFilter.memberTypes = `[${[2, 3].join(',')}]`
+      newFilter.memberTypes = memberTypes || `[${[2, 3].join(',')}]`
     }
-    if (newFilter.categoryId*1 !== 1) {
+    if (newFilter.categoryId && newFilter.categoryId*1 !== 1) {
       queryParams.memberTypes = undefined
       queryParams.creatorName = undefined 
     }else{
+      queryParams.title = undefined;
       queryParams.isAvailable = undefined;
     }
     const filter = {
@@ -170,6 +172,7 @@ export default function Home() {
       filter.page = defaultPagination.page,
       filter.size = defaultPagination.size
     }   
+    filter
     setEnd(false)
     setLoadMore(false)
     setQueryParams(filter)
@@ -185,11 +188,13 @@ export default function Home() {
   const handleSearchListPost = () => {
     if (valueSearch && queryParams.categoryId === 1) {
       handleFilterChange({
+        categoryId: 1,
         creatorName: valueSearch
       })
     } else if (valueSearch && queryParams.categoryId !== 1) {
       handleFilterChange({
-        title: valueSearch
+        title: valueSearch,
+        isAvailable: 1
       })
     }
   }
@@ -197,11 +202,13 @@ export default function Home() {
     setValueSearch("");
     if (queryParams.categoryId*1 === 1) {
       handleFilterChange({
+        categoryId: 1,
         creatorName: undefined
       })
     } else if (queryParams.categoryId*1 !== 1) {
       handleFilterChange({
-        title: undefined
+        title: undefined,
+        isAvailable: 1
       })
     }
   }
@@ -405,12 +412,12 @@ const Infinity = (props) => {
   return (
     <>
       <Grid container spacing={1} id="listPost">
-        {dataPost?.data?.data?.map((e) => {
+        {dataPost?.data?.data?.map((e,i) => {
           const typeAccount = listTypeAccount.find(
             (t) => t.type * 1 === e?.creator?.type * 1
           );
           return (
-            <Grid item xs={4} key={e?.id}>
+            <Grid item xs={4} key={i}>
               <Paper
                 className="animate__animated animate__backInUp post-item-can-focus"
                 variant="outlined"
@@ -497,7 +504,7 @@ const Infinity = (props) => {
                     </Typography>
                     <Typography variant="body2">
                       {moment(e?.updatedAt).format("HH:mm - DD/MM/yyyy") +
-                        " - "+ (e?.city?.name || 'Toàn quốc')}
+                        " - "+ (e?.city?.name.replace('Thành phố','').replace('Tỉnh','') || 'Toàn quốc')}
                     </Typography>
                   </Box>
                 </Box>

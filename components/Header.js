@@ -16,6 +16,14 @@ import { getDetailUser } from "../features/users/userAPI";
 import { listTypePost } from "../common/post";
 import { useRouter } from "next/router";
 
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton'; 
+import { BootstrapButton } from "../utils";
 const navItems = [
   {
     id: 1,
@@ -82,7 +90,11 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
   const [isNavBarActive, setIsNavBarActive] = useState(type || 1);
   const infoUserString = getCookie('auth')
   let infoUser = infoUserString ? JSON.parse(infoUserString) : {};
+  const [openPopup, setOpenPopup] = useState(false)
     
+  const closePopUp = ()=>{
+    setOpenPopup(false)
+  }
   const { data } = useQuery(["user", infoUser], () => getDetailUser(infoUser?.id), {enabled: isChange});
   useEffect(()=>{
     const auth = {
@@ -102,8 +114,15 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
   },[categoryId])
 
   const handleClickNavBarItem = (e,val) => {  
+    const nav = navItems.find(e => e.id === val*1)
     const acc =  listTypePost.find(e => e.id === val*1) ;
     const accClone = {...acc}
+    if(val*1 === 52 && !infoUserString?.length > 0){
+      setOpenPopup(true)
+      return;
+    }
+
+
     if(val*1 === 1){
       accClone.children = [
         {
@@ -118,10 +137,14 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
     }
       ]
     }
+    
     if(val*1 < 50 && typeof(handleChange) ==='function'){  
       setTimeout(() => handleChange(accClone))
     }
     setIsNavBarActive(val);  
+    if(nav?.url){
+      router.push(nav?.url)
+    }
   };  
   return (
     <>
@@ -201,7 +224,6 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
             <Box sx={{ display:  "flex" }}>
               {navItems.map((item) => { 
                 return  (
-                <Link href={item.url} key={item.id}>
                   <Button
                     id={item.id}
                     onClick={(e) => handleClickNavBarItem(e,item.id)}
@@ -219,8 +241,7 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
                     }
                   >
                     {item.text}
-                  </Button> 
-                </Link> )
+                  </Button>  )
               })}
             </Box>
           </Box>
@@ -270,8 +291,90 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
       )}
     </Box>
     <Box sx={{height: isShowSubBar?'107px':'55px'}}></Box>
+    <PopUpRequestLogin openPopup={openPopup} setOpenPopup={closePopUp}/>
     </>
    
   );
 } 
 export { Header };
+
+
+
+
+const PopUpRequestLogin = ({openPopup, setOpenPopup})=>{
+  const router = useRouter()
+  const handleClose = () => {
+    setOpenPopup(false);
+  };
+  return (
+    <div>
+      <BootstrapDialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={openPopup}
+      >
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={handleClose}
+        ></BootstrapDialogTitle>
+        <DialogContent>
+          <img
+            src={"https://dev-charity.estuary.solutions/popupIcon.svg"}
+          ></img>
+          <Typography variant="h6" align="center">
+            Chào mừng đến với{" "}
+          </Typography>
+          <Typography variant="h6" align="center">
+            Kết nối yêu thương
+          </Typography>
+          <Typography variant="body1" align="center">
+            Cộng đồng từ thiện uy tín, minh bạch
+          </Typography>
+          <BootstrapButton sx={{color: 'white'}}>
+            <Link href="/user/login">Đăng nhập hoặc đăng ký tài khoản</Link>
+          </BootstrapButton>
+        </DialogContent>
+      </BootstrapDialog>
+    </div>
+  );
+}
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
+
+const BootstrapDialogTitle = (props) => {
+  const { children, onClose, ...other } = props;
+
+  return (
+    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+      {children}
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            fontSize: '16px',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          Lúc khác
+        </IconButton>
+      ) : null}
+    </DialogTitle>
+  );
+};
+
+
+BootstrapDialogTitle.propTypes = {
+  children: PropTypes.node,
+  onClose: PropTypes.func.isRequired,
+};

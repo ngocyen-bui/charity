@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Container, Link, Typography } from "@mui/material";
+import { Box, Breadcrumbs, Container, Typography } from "@mui/material";
 import { Header } from "../../components/Header"; 
 import { useState } from "react";
 import { Footer, PostUser } from "../../components";
@@ -6,10 +6,12 @@ import { listTypePost } from "../../common/post";
 import { getCookie } from "cookies-next";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"; 
 
+import * as React from 'react'; 
+import Link from "next/link";
 export default function Post() {
   const [type, setType] = useState();
   const [extraType, setExtraType] = useState();
-  const infoUserString = getCookie("auth");
+  const infoUserString = getCookie("auth"); 
   const handleClickDetailListPost = () => {
   };
   const handleChooseTypePost = (e) => {
@@ -30,7 +32,6 @@ export default function Post() {
     <>
       <Header isShowSubBar={false} type={52} />
       <Container maxWidth="md">
-        {infoUserString?.length > 0 ? (
           <>
             {type ? (
               <Box sx={{ paddingTop: "24px" }}>
@@ -130,14 +131,11 @@ export default function Post() {
             )}
 
             <Box sx={{ textAlign: "center", padding: "10px 0" }}>
-              <Link className="text-link" onClick={handleClickDetailListPost}>
+              <Link href={'#'} className="text-link" onClick={handleClickDetailListPost}>
                 Tìm hiểu chi tiết danh mục tin đăng
               </Link>
-            </Box>
+            </Box> 
           </>
-        ) : (
-          <div>Please login</div>
-        )}
       </Container>
       <Footer />
     </>
