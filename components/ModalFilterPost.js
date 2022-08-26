@@ -31,11 +31,14 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
     allPage: true, 
   });
   useEffect(()=>{  
-    // let result = sorted.find(e => e.text === filter.sortedBy); 
+    let result = sorted.find(e => e.text === filter.sortedBy); 
+    console.log(result)
     setListResult({
       cityId: filter?.cityId,
       districtId: filter?.districtId,
+      sortedBy: result?.id
     })  
+    formik.setFieldValue(listResult)
   },[filter])
   
   const filterFormat = (filter) => {
@@ -51,6 +54,7 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
 
   const handleChangeProvince = (val, record) => {
     formik.handleChange(val);
+    formik.setFieldValue('districtId', null)
     setListResult({
       cityId: record?.props?.data,
     });
@@ -71,14 +75,16 @@ const RenderModalFilterPost = ({ isOpen, handleClose, handleSearch, filter, setF
       districtId: record?.props?.data,
     });
   };
+  
   const formik = useFormik({
     initialValues: {
-      cityId: filter?.cityId || undefined,
-      districtId: filter?.districtId ||undefined,
-      sortedBy: filter?.sortedBy || undefined,
+      cityId:  undefined,
+      districtId:undefined,
+      sortedBy: undefined,
     },
     enableReinitialize: true, 
     onSubmit: (values) => {
+      console.log(values)
       handleSearch(values) 
       handleClose();
     },

@@ -230,6 +230,7 @@ const RenderTabPanel = ({ typePost, updateType, id }) => {
                         src={linkImage(e?.images?.image || defaultImage)}
                         width="340px"
                         height="260px"
+                        layout="fixed"
                         objectFit="cover"
                         style={{ borderRadius: "10px" }}
                         alt="Image"

@@ -42,7 +42,7 @@ export default function Home() {
   const router = useRouter()
   const { type, categoryId,memberTypes,sortedBy,cityId,districtId,size, title,creatorName } = router.query;
   const queryClient = useQueryClient()
-  const [valueSearch, setValueSearch] = useState("");
+  const [valueSearch, setValueSearch] = useState(title ||"");
   const [filterWithType, setFilterWithType] = useState(type*1)
   const [loadMore, setLoadMore] = useState(false);
   const [openModalFilter, setOpenModalFilter] = useState(false)
@@ -60,6 +60,7 @@ export default function Home() {
     districtId: districtId || undefined,
     sortedBy: sortedBy || "",
     page: defaultPagination.page,
+    title: title || '',
     size: size || defaultPagination.size,
     ...defaultPagination,
   }
@@ -82,7 +83,7 @@ export default function Home() {
   });  
  
 
-  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId, title,creatorName], () => getListPost({ filter: queryString.stringify(cleanFilter(queryParams))})); 
+  const { data: state = [] } = useQuery(['listPost', categoryId,type,memberTypes,sortedBy,cityId,title,creatorName], () => getListPost({ filter: queryString.stringify(cleanFilter(queryParams))})); 
   useEffect(() => {
     if(state && state?.data?.data?.length < 12) {
       setEnd(true)
@@ -417,7 +418,7 @@ const Infinity = (props) => {
               >
                 <Box
                   sx={{
-                    borderBottom: "1px solid #ddd",
+                    // borderBottom: "1px solid #ddd",
                     borderRadius: "10px",
                   }}
                 >
@@ -426,7 +427,7 @@ const Infinity = (props) => {
                     width="340px"
                     height="260px"
                     objectFit="cover"
-                    style={{ borderRadius: "10px" }}
+                    style={{ borderRadius: "10px", borderBottom: "1px solid #ddd",}}
                     alt="Image"
                     onClick={() => handleClickDetailPost(e?.id)}
                   />

@@ -25,21 +25,24 @@ import { linkImage } from "../../features/Image";
 import { getPost } from "../../features/users/postAPI";
 import moment from "moment";
 import { listExtraPost, listTypePost } from "../../common/post";
+import { getCookie } from "cookies-next";
+import Link from "next/link";
 
 
 export default function GiftPost() {
   const router = useRouter(); 
+  const authString = getCookie('auth')
   const { id } = router.query;  
   const {data:  listInfo} = useQuery(['gift', id], ()=> getPost({id}), {enabled: Boolean(id)})
   const listData = listInfo?.data?.data
-  const result = listExtraPost?.find(e=> e.categoryId === listData?.categoryId); 
-  const extra = listTypePost?.find(e => e.id === result?.categoryId)
+  const result = listTypePost?.find(e=> e.id === listData?.categoryId); 
+  const extra = result?.children?.find(e=>e.type === listData?.type)
   const typeAccount = listTypeAccount.find(
     (t) => t.type * 1 === listData?.creator?.type * 1
   );
   const handleRedirect = ()=>{
     router.push(`/user/${listData?.creator?.id}`)
-  }
+  } 
   return (
     <>
       <Header isShowSubBar={false} />
@@ -108,7 +111,7 @@ export default function GiftPost() {
               fontSize="small"
               sx={{ paddingBottom: "8px", display: "inline-block" }}
             >
-              {extra?.text} {result?.text && `/ ${result?.text}`}
+              {result?.text} {extra?.text && `/ ${extra?.text}`}
             </Typography>
           </Box>
           {listData?.categoryId !== 1 &&  <Box>
@@ -198,7 +201,7 @@ export default function GiftPost() {
           >
             Liên hệ
           </Typography>
-          <Box>
+          {authString?<Box>
             <Box sx={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
               <PersonOutlineOutlinedIcon />
               <Typography variant="subtitle2" fontSize="small" sx={{fontSize: '14px'}}>{listData?.creator?.name}</Typography>
@@ -215,7 +218,8 @@ export default function GiftPost() {
               <RoomOutlinedIcon />
               <Typography variant="subtitle2" fontSize="small" sx={{fontSize: '14px'}}>{listData?.dataInfo?.addressLocation}</Typography>
             </Box>
-          </Box>
+          </Box>:<Box><Link href={'/user/login'}><u style={{cursor: 'pointer', fontSize: '16px', paddingBottom: '12px'}}>Đăng nhâp/ Đăng ký để xem thông tin liên hệ</u></Link></Box>}
+           
         </Box>
       </Container>
     </>
