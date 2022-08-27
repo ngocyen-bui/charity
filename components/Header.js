@@ -206,12 +206,14 @@ function Header({isShowSubBar=true, isChange=false, handleChange, type}) {
               ) : (
                 <Box>
                   <Link href="/user/login">
-                    <Button size="small" className="btn-header-login">
+                    <Button size="small">
                       <Typography
                         style={{
                           fontSize: "12px", 
                           textTransform: "none", 
                           borderRadius:' 4px',
+                          backgroundColor: 'white',
+                          color: '#ef5d5d',
                           padding:' 4px 12px',
                           lineHeight: '24px', 
                         }}
